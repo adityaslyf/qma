@@ -1,5 +1,4 @@
 /** @type {import('tailwindcss').Config} */
-import plugin from "tailwindcss-animate";
 import tailwindAnimate from "tailwindcss-animate";
 
 export default {
@@ -76,5 +75,5 @@ export default {
       },
     },
   },
-  plugins: [tailwindAnimate, require("tailwind-merge")],
+  plugins: [tailwindAnimate],
 };
