@@ -82,63 +82,191 @@ function extractSkills(text: string): string[] {
 }
 
 function extractExperience(text: string): Experience[] {
-  // This is a basic implementation. You might want to enhance it based on your needs
-  const experienceRegex = /(?:experience|work|employment).*?\n([\s\S]*?)(?=\n\s*(?:education|skills|projects|$))/i
-  const match = text.match(experienceRegex)
+  const experience: Experience[] = []
   
-  if (!match) return []
+  // Common job title keywords
+  const jobTitles = [
+    'Software Engineer', 'Developer', 'Engineer', 'Intern', 'Manager',
+    'Lead', 'Architect', 'Consultant', 'Associate', 'Analyst'
+  ]
 
-  const experienceText = match[1]
-  const experiences: Experience[] = []
-  
-  // Split by date patterns to identify different positions
-  const datePattern = /(?:\d{1,2}\/\d{1,2}\/\d{4}|\d{4})/g
-  const sections = experienceText.split(datePattern)
-  
-  sections.forEach((section, _index) => {
-    if (section.trim()) {
-      const lines = section.split('\n').filter(line => line.trim())
-      if (lines.length >= 2) {
-        experiences.push({
-          company: lines[0].trim(),
-          role: lines[1].trim(),
-          startDate: '', // You'll need to enhance this to properly extract dates
-          endDate: '',
-          description: lines.slice(2).join('\n').trim(),
-          technologies: extractSkills(section)
+  // Common company indicators
+  const companyIndicators = ['at', 'with', '-', '|', '@']
+
+  // Split text into lines and clean them
+  const lines = text.split('\n').map(line => line.trim()).filter(Boolean)
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    
+    // Look for lines containing job titles
+    const hasJobTitle = jobTitles.some(title => 
+      line.toLowerCase().includes(title.toLowerCase())
+    )
+
+    if (hasJobTitle) {
+      // Try to extract dates from the current or next line
+      const datePattern = /(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*\d{4})|(?:\d{1,2}\/\d{4})|(?:\d{4})/gi
+      const dates = line.match(datePattern) || (lines[i + 1] || '').match(datePattern) || []
+      
+      // Try to extract company name
+      let company = ''
+      for (const indicator of companyIndicators) {
+        const parts = line.split(indicator)
+        if (parts.length > 1) {
+          company = parts[1].trim()
+          break
+        }
+      }
+
+      // Try to extract role
+      let role = ''
+      for (const title of jobTitles) {
+        if (line.toLowerCase().includes(title.toLowerCase())) {
+          role = title
+          break
+        }
+      }
+
+      // Look for description in subsequent lines
+      let description = ''
+      let j = i + 1
+      while (j < lines.length && j < i + 5) { // Look at next 4 lines max
+        if (!lines[j].match(datePattern)) {
+          description += lines[j] + ' '
+        }
+        j++
+      }
+
+      if (role) {
+        experience.push({
+          company: company || 'Unknown Company',
+          role: role,
+          startDate: dates[0] || '',
+          endDate: dates[1] || 'Present',
+          description: description.trim(),
+          technologies: extractTechnologiesFromText(description)
         })
       }
     }
-  })
+  }
 
-  return experiences
+  console.log('Extracted Experience:', experience)
+  return experience
 }
 
 function extractEducation(text: string): Education[] {
-  const educationRegex = /(?:education|academic).*?\n([\s\S]*?)(?=\n\s*(?:experience|skills|projects|$))/i
-  const match = text.match(educationRegex)
-  
-  if (!match) return []
-
-  const educationText = match[1]
   const education: Education[] = []
   
-  const sections = educationText.split('\n\n')
-  
-  sections.forEach(section => {
-    const lines = section.split('\n').filter(line => line.trim())
-    if (lines.length >= 2) {
-      education.push({
-        institution: lines[0].trim(),
-        degree: lines[1].trim(),
-        field: lines[1].trim(), // You might want to enhance this to better separate degree and field
-        startDate: '', // You'll need to enhance this to properly extract dates
-        endDate: ''
-      })
-    }
-  })
+  // Common education keywords
+  const eduKeywords = [
+    'Bachelor', 'Master', 'PhD', 'B.Tech', 'M.Tech', 'B.E.', 'M.E.',
+    'B.Sc', 'M.Sc', 'BSc', 'MSc', 'College', 'University', 'Institute',
+    'School'
+  ]
 
+  // Common degree patterns
+  const degreePatterns = [
+    'Bachelor[s]?\\s+(?:of|in)\\s+[\\w\\s]+',
+    'Master[s]?\\s+(?:of|in)\\s+[\\w\\s]+',
+    'B\\.?Tech',
+    'M\\.?Tech',
+    'B\\.?E',
+    'M\\.?E',
+    'PhD',
+    'Doctorate'
+  ]
+
+  // Split text into lines and clean them
+  const lines = text.split('\n').map(line => line.trim()).filter(Boolean)
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    
+    // Check if line contains education keywords
+    const hasEduKeyword = eduKeywords.some(keyword => 
+      line.toLowerCase().includes(keyword.toLowerCase())
+    )
+
+    if (hasEduKeyword) {
+      // Try to extract dates
+      const datePattern = /(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*\d{4})|(?:\d{1,2}\/\d{4})|(?:\d{4})/gi
+      const dates = line.match(datePattern) || (lines[i + 1] || '').match(datePattern) || []
+
+      // Try to extract institution
+      let institution = ''
+      for (const keyword of eduKeywords) {
+        if (line.includes(keyword)) {
+          const parts = line.split(keyword)
+          institution = (parts[0] || parts[1] || '').trim()
+          if (institution) break
+        }
+      }
+
+      // Try to extract degree
+      let degree = ''
+      for (const pattern of degreePatterns) {
+        const match = line.match(new RegExp(pattern, 'i'))
+        if (match) {
+          degree = match[0]
+          break
+        }
+      }
+
+      // Try to extract field of study
+      const fields = [
+        'Computer Science', 'Information Technology', 'Engineering',
+        'Mathematics', 'Physics', 'Business', 'Management'
+      ]
+      let field = ''
+      for (const f of fields) {
+        if (line.toLowerCase().includes(f.toLowerCase())) {
+          field = f
+          break
+        }
+      }
+
+      if (institution || degree) {
+        education.push({
+          institution: institution || 'Unknown Institution',
+          degree: degree || 'Unknown Degree',
+          field: field || degree || 'Unknown Field',
+          startDate: dates[0] || '',
+          endDate: dates[1] || dates[0] || '',
+          grade: extractGrade(lines[i], lines[i + 1])
+        })
+      }
+    }
+  }
+
+  console.log('Extracted Education:', education)
   return education
+}
+
+// Helper function to extract grade
+function extractGrade(line1: string, line2: string = ''): string | undefined {
+  const gradePatterns = [
+    /GPA:\s*([\d.]+)/i,
+    /CGPA:\s*([\d.]+)/i,
+    /Grade:\s*([\d.]+)/i,
+    /([\d.]+)\s*GPA/i,
+    /([\d.]+)\s*CGPA/i
+  ]
+
+  for (const pattern of gradePatterns) {
+    const match1 = line1.match(pattern)
+    if (match1) return match1[1]
+    
+    const match2 = line2?.match(pattern)
+    if (match2) return match2[1]
+  }
+
+  return undefined
+}
+
+// Helper function to extract technologies from text
+function extractTechnologiesFromText(text: string): string[] {
+  return extractSkills(text)
 }
 
 export async function parseResume(file: File): Promise<Partial<Profile>> {
