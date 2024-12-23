@@ -19,7 +19,7 @@ async function extractTextFromFile(file: File): Promise<string> {
           .join(' ')
         fullText += pageText + '\n'
       }
-      
+       
       console.log('Extracted Text:', fullText)
       return fullText.trim()
     } catch (error) {
@@ -163,40 +163,81 @@ function extractEducation(text: string): Education[] {
 }
 
 function extractExperience(text: string): Experience[] {
-  const experienceSection = text.split(/EXPERIENCE/i)[1]?.split(/PROJECTS/i)[0] || ''
-  const entries = experienceSection.split(/(?=•\s*[A-Z]|\n\s*[A-Z][a-z]+\s*•)/g)
+  // Find the experience section
+  const experienceSection = text.split(/EXPERIENCE/i)[1]?.split(/PROJECTS|VOLUNTEER/i)[0] || ''
   
-  return entries.filter(Boolean).map(entry => {
-    const lines = entry.split('\n').map(line => line.trim()).filter(Boolean)
-    if (lines.length < 2) return null
+  // Split into individual experiences
+  const entries = experienceSection
+    .split(/(?=(?:^|\n)(?:[•\-]\s*)?[A-Z][^•\n]*(?:Remote|India|\([^)]*\))?$)/m)
+    .filter(Boolean)
+    .map(entry => entry.trim())
 
-    // Extract company and location
-    const companyLine = lines[0]
-    const companyMatch = companyLine?.match(/(.*?)(?:\s*•\s*(Remote|India|\(.*?\)))?$/)
-    const company = companyMatch?.[1]?.trim() || ''
-    const location = companyMatch?.[2]?.trim() || ''
+  return entries
+    .filter(entry => entry.length > 0)
+    .map(entry => {
+      const lines = entry.split('\n').map(line => line.trim()).filter(Boolean)
+      if (lines.length < 2) return null
 
-    // Extract role and dates
-    const roleLine = lines[1]
-    const roleMatch = roleLine?.match(/(.*?)\s*((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)'?\s*\d{2}\s*-\s*(?:Present|(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)'?\s*\d{2})))/)
-    const role = roleMatch?.[1]?.trim() || ''
-    const dates = roleMatch?.[2]?.trim() || ''
+      // Extract company and location
+      const companyLine = lines[0]
+      const companyMatch = companyLine.match(/^(?:[•\-]\s*)?(.*?)(?:\s*[•\-]\s*(Remote|India|\(.*?\)))?$/)
+      const company = companyMatch?.[1]?.trim() || ''
 
-    // Extract description points
-    const description = lines.slice(2)
-      .filter(line => line.startsWith('•'))
-      .map(line => line.replace(/^•\s*/, ''))
-      .join('\n')
+      // Extract role and dates
+      const roleLine = lines[1]
+      const roleMatch = roleLine.match(/^(?:[•\-]\s*)?(.*?)\s+((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)'?\s*\d{2}\s*-\s*(?:Present|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)'?\s*\d{2}))/)
+      
+      const role = roleMatch?.[1]?.trim() || roleLine.split(/\s+(?=(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)'?\s*\d{2})/)[0]?.trim() || ''
+      const dateRange = roleMatch?.[2] || roleLine.match(/(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)'?\s*\d{2}\s*-\s*(?:Present|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)'?\s*\d{2})/)?.[0] || ''
 
-    return {
-      company,
-      role,
-      startDate: dates.split('-')[0]?.trim() || '',
-      endDate: dates.split('-')[1]?.trim() || '',
-      description,
-      technologies: extractTechnologiesFromText(description)
-    }
-  }).filter(Boolean) as Experience[]
+      // Extract description points
+      const description = lines
+        .slice(2)
+        .filter(line => line.startsWith('•') || line.startsWith('-'))
+        .map(line => line.replace(/^[•\-]\s*/, ''))
+        .join('\n')
+
+      // Extract and format dates
+      let [startDate, endDate] = dateRange.split(/\s*-\s*/)
+      
+      // Convert date format from "Sep' 24" to "2024-09"
+      const monthMap: Record<string, string> = {
+        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+        'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+        'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+      }
+
+      function formatDate(dateStr: string): string {
+        if (!dateStr) return ''
+        if (dateStr.toLowerCase() === 'present') return ''
+        
+        const match = dateStr.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)'?\s*(\d{2})/)
+        if (match) {
+          const month = monthMap[match[1]]
+          const year = `20${match[2]}`
+          return `${year}-${month}`
+        }
+        return ''
+      }
+
+      startDate = formatDate(startDate)
+      endDate = formatDate(endDate)
+
+      // Extract technologies from description
+      const technologies = extractTechnologiesFromText(description)
+
+      if (!company && !role) return null
+
+      return {
+        company,
+        role,
+        startDate,
+        endDate,
+        description,
+        technologies
+      }
+    })
+    .filter(Boolean) as Experience[]
 }
 
 // Helper function to extract grade
@@ -227,7 +268,9 @@ function extractTechnologiesFromText(text: string): string[] {
     'React', 'Angular', 'Vue', 'Node.js', 'Express', 'Django', 'Flask',
     'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'AWS', 'Docker', 'Kubernetes',
     'Git', 'REST API', 'GraphQL', 'HTML', 'CSS', 'Sass', 'Linux', 'Agile',
-    'Next.js', 'Tailwind CSS', 'Web3.js', 'Solana', 'Blockchain'
+    'Next.js', 'Tailwind CSS', 'Web3.js', 'Solana', 'Blockchain', 'RTK Query',
+    'Redux', 'Context API', 'Supabase', 'Firebase', 'Vercel', 'Three.js',
+    'GSAP', 'Chakra-ui'
   ]
 
   return commonTechnologies.filter(tech => 
