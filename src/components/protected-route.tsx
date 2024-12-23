@@ -1,5 +1,6 @@
 import { useAuth } from "../hooks/user-auth"
 import { ReactNode } from "react"
+import { useNavigate } from "react-router-dom"
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -7,17 +8,16 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isSignedIn, isLoaded } = useAuth()
+  console.log('isSignedIn', isSignedIn)
+  const navigate = useNavigate()
 
   if (!isLoaded) {
     return <div>Loading...</div>
   }
 
   if (!isSignedIn) {
-    return (
-      <div className="text-center">
-        <h2>Please sign in to access this content</h2>
-      </div>
-    )
+    navigate('/login')
+    return null
   }
 
   return <>{children}</>
