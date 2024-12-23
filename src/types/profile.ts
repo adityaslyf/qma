@@ -63,3 +63,95 @@ export type Profile = {
   certificates: Certificate[]
   desiredRole: string
 }
+
+// Add validation types for form fields
+export type ProfileValidation = {
+  [K in keyof Profile]?: string
+}
+
+// Add types for API responses
+export type ProfileResponse = {
+  success: boolean
+  data?: Profile
+  error?: string
+}
+
+// Add types for profile updates
+export type ProfileUpdate = Partial<Profile>
+
+// Add types for section-specific updates
+export type SectionUpdate<T> = {
+  index: number
+  data: Partial<T>
+}
+
+// Add types for API requests
+export type ProfileRequest = {
+  action: 'create' | 'update' | 'delete'
+  data: ProfileUpdate
+}
+
+// Add types for resume parsing
+export type ParsedResume = Partial<Profile>
+
+// Add types for file upload
+export type FileUpload = {
+  file: File
+  type: 'avatar' | 'resume' | 'projectImage'
+}
+
+// Add types for search and filtering
+export type ProfileFilter = {
+  skills?: string[]
+  location?: string
+  experience?: number
+  role?: string
+}
+
+// Add types for sorting
+export type ProfileSort = {
+  field: keyof Profile
+  direction: 'asc' | 'desc'
+}
+
+// Add types for pagination
+export type PaginationParams = {
+  page: number
+  limit: number
+}
+
+// Add types for profile statistics
+export type ProfileStats = {
+  totalProfiles: number
+  averageExperience: number
+  topSkills: { skill: string; count: number }[]
+  locationDistribution: { location: string; count: number }[]
+}
+
+// Add types for profile visibility settings
+export type PrivacySettings = {
+  isPublic: boolean
+  showEmail: boolean
+  showPhone: boolean
+  showLocation: boolean
+}
+
+// Add types for profile completion status
+export type CompletionStatus = {
+  [K in keyof Profile]: boolean
+}
+
+// Add types for profile import/export
+export type ProfileExport = {
+  version: string
+  data: Profile
+  exportDate: string
+}
+
+// Add types for profile notifications
+export type ProfileNotification = {
+  type: 'update' | 'reminder' | 'alert'
+  message: string
+  date: string
+  read: boolean
+}
