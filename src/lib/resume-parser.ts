@@ -1,6 +1,6 @@
 import { pdfjs } from './pdf-config'
 import * as mammoth from 'mammoth'
-import { Profile, Experience, Education, Project } from '@/types/profile'
+import { Profile, Experience, Education, Project, SocialLink } from '@/types/profile'
 
 // Helper function to extract text based on file type
 async function extractTextFromFile(file: File): Promise<string> {
@@ -78,45 +78,45 @@ function extractSkills(text: string): string[] {
 }
 
 // Helper function to extract and standardize dates
-function extractDates(text: string): { startDate: string; endDate: string } {
-  // Common date formats
-  const datePatterns = [
-    // MM/YYYY or MM-YYYY
-    /(?:(?:0?[1-9]|1[0-2])[\/\-]\d{4})/g,
-    // Month YYYY
-    /(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4}/g,
-    // YYYY
-    /\b(20\d{2}|19\d{2})\b/g,
-    // Present or Current
-    /\b(?:Present|Current)\b/gi,
-  ]
+// function extractDates(text: string): { startDate: string; endDate: string } {
+//   // Common date formats
+//   const datePatterns = [
+//     // MM/YYYY or MM-YYYY
+//     /(?:(?:0?[1-9]|1[0-2])[\/\-]\d{4})/g,
+//     // Month YYYY
+//     /(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4}/g,
+//     // YYYY
+//     /\b(20\d{2}|19\d{2})\b/g,
+//     // Present or Current
+//     /\b(?:Present|Current)\b/gi,
+//   ]
 
-  let allDates: string[] = []
+//   let allDates: string[] = []
   
-  // Extract all dates using different patterns
-  datePatterns.forEach(pattern => {
-    const matches = text.match(pattern)
-    if (matches) {
-      allDates = [...allDates, ...matches]
-    }
-  })
+//   // Extract all dates using different patterns
+//   datePatterns.forEach(pattern => {
+//     const matches = text.match(pattern)
+//     if (matches) {
+//       allDates = [...allDates, ...matches]
+//     }
+//   })
 
-  // Sort dates chronologically
-  allDates = allDates
-    .filter(date => date.toLowerCase() !== 'present' && date.toLowerCase() !== 'current')
-    .sort((a, b) => {
-      const dateA = new Date(a)
-      const dateB = new Date(b)
-      return dateA.getTime() - dateB.getTime()
-    })
+//   // Sort dates chronologically
+//   allDates = allDates
+//     .filter(date => date.toLowerCase() !== 'present' && date.toLowerCase() !== 'current')
+//     .sort((a, b) => {
+//       const dateA = new Date(a)
+//       const dateB = new Date(b)
+//       return dateA.getTime() - dateB.getTime()
+//     })
 
-  const hasPresent = text.match(/\b(?:Present|Current)\b/i)
+//   const hasPresent = text.match(/\b(?:Present|Current)\b/i)
 
-  return {
-    startDate: allDates[0] || '',
-    endDate: hasPresent ? 'Present' : (allDates[allDates.length - 1] || '')
-  }
-}
+//   return {
+//     startDate: allDates[0] || '',
+//     endDate: hasPresent ? 'Present' : (allDates[allDates.length - 1] || '')
+//   }
+// }
 
 function extractEducation(text: string): Education[] {
   const educationSection = text.split(/EDUCATION/i)[1] || ''
@@ -159,7 +159,14 @@ function extractEducation(text: string): Education[] {
     education.push(currentEntry as Education)
   }
 
-  return education
+  return education.map(edu => ({
+    institution: edu.institution,
+    degree: edu.degree,
+    field: edu.field,
+    startDate: edu.startDate,
+    endDate: edu.endDate,
+    grade: edu.grade
+  }))
 }
 
 function extractExperience(text: string): Experience[] {
@@ -241,25 +248,25 @@ function extractExperience(text: string): Experience[] {
 }
 
 // Helper function to extract grade
-function extractGrade(line1: string, line2: string = ''): string | undefined {
-  const gradePatterns = [
-    /GPA:\s*([\d.]+)/i,
-    /CGPA:\s*([\d.]+)/i,
-    /Grade:\s*([\d.]+)/i,
-    /([\d.]+)\s*GPA/i,
-    /([\d.]+)\s*CGPA/i
-  ]
+// function extractGrade(line1: string, line2: string = ''): string | undefined {
+//   const gradePatterns = [
+//     /GPA:\s*([\d.]+)/i,
+//     /CGPA:\s*([\d.]+)/i,
+//     /Grade:\s*([\d.]+)/i,
+//     /([\d.]+)\s*GPA/i,
+//     /([\d.]+)\s*CGPA/i
+//   ]
 
-  for (const pattern of gradePatterns) {
-    const match1 = line1.match(pattern)
-    if (match1) return match1[1]
+//   for (const pattern of gradePatterns) {
+//     const match1 = line1.match(pattern)
+//     if (match1) return match1[1]
     
-    const match2 = line2?.match(pattern)
-    if (match2) return match2[1]
-  }
+//     const match2 = line2?.match(pattern)
+//     if (match2) return match2[1]
+//   }
 
-  return undefined
-}
+//   return undefined
+// }
 
 // Helper function to extract technologies from text
 function extractTechnologiesFromText(text: string): string[] {
@@ -317,7 +324,7 @@ function extractProjects(text: string): Project[] {
     const titleLine = lines[0]
     const titleMatch = titleLine?.match(/(.*?)(?:\s*\((.*?)\))?$/)
     const title = titleMatch?.[1]?.replace(/^[•\s-]+/, '').trim() || ''
-    const projectType = titleMatch?.[2]?.trim() || ''
+    // const projectType = titleMatch?.[2]?.trim() || ''
 
     // Extract tech stack
     const techStackLine = lines.find(line => 
@@ -354,38 +361,38 @@ function extractProjects(text: string): Project[] {
       technologies,
       githubUrl,
       liveUrl,
-      image: ''
+      image: undefined
     }
   }).filter(Boolean) as Project[]
 }
 
 // Add function to extract name and basic info
-function extractBasicInfo(text: string) {
-  const lines = text.split('\n')
+// function extractBasicInfo(text: string) {
+//   const lines = text.split('\n')
   
-  // Extract name (usually first large text)
-  const name = lines[0]?.trim() || ''
+//   // Extract name (usually first large text)
+//   const name = lines[0]?.trim() || ''
 
-  // Extract contact details
-  const contactPatterns = {
-    phone: /\(\+\d{2}\)\s*\d{10}/,
-    email: /[\w.-]+@[\w.-]+\.\w+/,
-    github: /github\.com\/[\w-]+/,
-    linkedin: /linkedin\.com\/[\w-]+/,
-    twitter: /twitter\.com\/[\w-]+/
-  }
+//   // Extract contact details
+//   const contactPatterns = {
+//     phone: /\(\+\d{2}\)\s*\d{10}/,
+//     email: /[\w.-]+@[\w.-]+\.\w+/,
+//     github: /github\.com\/[\w-]+/,
+//     linkedin: /linkedin\.com\/[\w-]+/,
+//     twitter: /twitter\.com\/[\w-]+/
+//   }
 
-  return {
-    name,
-    contacts: Object.entries(contactPatterns).reduce((acc, [key, pattern]) => {
-      const match = text.match(pattern)?.[0] || ''
-      return { ...acc, [key]: match }
-    }, {} as Record<string, string>)
-  }
-}
+//   return {
+//     name,
+//     contacts: Object.entries(contactPatterns).reduce((acc, [key, pattern]) => {
+//       const match = text.match(pattern)?.[0] || ''
+//       return { ...acc, [key]: match }
+//     }, {} as Record<string, string>)
+//   }
+// }
 
 // Add function to extract full name and generate bio
-function extractFullNameAndBio(text: string): { fullName: string; bio: string } {
+function extractFullNameAndBio(text: string): { fullName: string; title: string; bio: string } {
   // Get the first few lines of text
   const lines = text.split('\n').map(line => line.trim()).filter(Boolean)
   
@@ -421,6 +428,9 @@ function extractFullNameAndBio(text: string): { fullName: string; bio: string } 
     }
   }
 
+  // Extract title from experience section
+  const title = text.match(/(?:Title|Position):\s*([^,\n]+)/i)?.[1]?.trim() || 'Software Developer'
+
   // Generate bio based on experience and skills
   const experienceSection = text.split(/EXPERIENCE/i)[1]?.split(/PROJECTS|EDUCATION|SKILLS/i)[0] || ''
   const projectsSection = text.split(/PROJECTS/i)[1]?.split(/VOLUNTEER|ACHIEVEMENTS|EDUCATION|SKILLS/i)[0] || ''
@@ -445,7 +455,8 @@ function extractFullNameAndBio(text: string): { fullName: string; bio: string } 
   const bio = `${currentRole} with expertise in ${keyTechnologies}. Passionate about building innovative solutions and delivering high-quality software.`
 
   return { 
-    fullName: fullName || 'Name Not Found', 
+    fullName: fullName || 'Name Not Found',
+    title,
     bio 
   }
 }
@@ -454,7 +465,7 @@ export async function parseResume(file: File): Promise<Partial<Profile>> {
   try {
     const text = await extractTextFromFile(file)
     
-    const { fullName, bio } = extractFullNameAndBio(text)
+    const { fullName, title, bio } = extractFullNameAndBio(text)
     const skills = extractSkills(text)
     const experience = extractExperience(text)
     const projects = extractProjects(text)
@@ -463,26 +474,47 @@ export async function parseResume(file: File): Promise<Partial<Profile>> {
     // Extract contact info
     const email = extractEmail(text)
     const phone = extractPhone(text)
-    const githubUrl = text.match(/github\.com\/[\w-]+/)?.[0] || ''
-    const linkedinUrl = text.match(/linkedin\.com\/[\w-]+/)?.[0] || ''
-    const twitterUrl = text.match(/twitter\.com\/[\w-]+/)?.[0] || ''
 
-    // Construct partial profile
+    // Extract location (if available)
+    const location = text.match(/(?:Location|Address|Based in):\s*([^,\n]+)/i)?.[1]?.trim() || ''
+
+    // Create properly typed socialLinks
+    const socialLinks: SocialLink[] = [
+      { 
+        platform: 'github', 
+        url: text.match(/(?:github\.com\/[\w-]+)/i)?.[0] || '' 
+      },
+      { 
+        platform: 'linkedin', 
+        url: text.match(/(?:linkedin\.com\/(?:in\/)?[\w-]+)/i)?.[0] || '' 
+      },
+      { 
+        platform: 'twitter', 
+        url: text.match(/(?:twitter\.com\/[\w-]+)/i)?.[0] || '' 
+      }
+    ].filter(link => link.url.length > 0) as SocialLink[]
+
+    // Portfolio URL extraction
+    const portfolioUrl = text.match(/(?:portfolio|website):\s*(https?:\/\/[^\s]+)/i)?.[1] || undefined
+
+    // Construct partial profile with correct types
     const parsedProfile: Partial<Profile> = {
       name: fullName,
+      title,
       bio,
       email,
       phone,
-      socialLinks: [
-        { platform: 'github', url: githubUrl },
-        { platform: 'linkedin', url: linkedinUrl },
-        { platform: 'twitter', url: twitterUrl }
-      ].filter(link => link.url),
+      location,
+      portfolioUrl,
+      socialLinks,
+      education,
       skills,
       techStack: skills,
       experience,
-      education,
-      projects
+      projects,
+      achievements: [], // Initialize empty as it's harder to reliably parse
+      certificates: [], // Initialize empty as it's harder to reliably parse
+      desiredRole: title // Use current role as desired role if not found
     }
 
     console.log('Parsed Profile:', parsedProfile)
