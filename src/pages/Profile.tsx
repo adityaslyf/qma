@@ -5,12 +5,44 @@ import { EducationSection } from "../sections/education-section"
 import { ExperienceSection } from "../sections/experience-section"
 import { ProjectsSection } from "../sections/projects-section"
 import { AchievementsSection } from "../sections/achievements-section"
+import { ResumeDropzone } from "../components/resume-dropzone"
+import { useResumeParser } from "@/hooks/use-resume-parser"
+import toast from 'react-hot-toast'
 
 export default function Profile() {
   const { profile, updateProfile } = useProfile()
+  const { parseResume, isProcessing } = useResumeParser()
+  
+
+  const handleResumeParse = async (file: File) => {
+    const toastId = toast.loading('Parsing resume...')
+    
+    try {
+      console.log('Starting resume parse for file:', file.name)
+      const parsedData = await parseResume(file)
+      if (parsedData) {
+        console.log('Successfully parsed resume:', parsedData)
+        updateProfile(parsedData)
+        toast.success('Resume parsed successfully', {
+          id: toastId,
+        })
+      } else {
+        throw new Error('Failed to parse resume')
+      }
+    } catch (error) {
+      console.error('Resume parse error:', error)
+      toast.error('Failed to parse resume', {
+        id: toastId,
+      })
+    }
+  }
 
   return (
     <div className="container max-w-4xl py-10">
+      <div className="mb-8">
+        <ResumeDropzone onParse={handleResumeParse} isProcessing={isProcessing} />
+      </div>
+
       <Tabs defaultValue="basic">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="basic">Basic Info</TabsTrigger>
