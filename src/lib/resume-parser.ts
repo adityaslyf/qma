@@ -264,13 +264,40 @@ function extractGrade(line1: string, line2: string = ''): string | undefined {
 // Helper function to extract technologies from text
 function extractTechnologiesFromText(text: string): string[] {
   const commonTechnologies = [
-    'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'Ruby', 'PHP',
-    'React', 'Angular', 'Vue', 'Node.js', 'Express', 'Django', 'Flask',
-    'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'AWS', 'Docker', 'Kubernetes',
-    'Git', 'REST API', 'GraphQL', 'HTML', 'CSS', 'Sass', 'Linux', 'Agile',
-    'Next.js', 'Tailwind CSS', 'Web3.js', 'Solana', 'Blockchain', 'RTK Query',
-    'Redux', 'Context API', 'Supabase', 'Firebase', 'Vercel', 'Three.js',
-    'GSAP', 'Chakra-ui'
+    // Programming Languages
+    'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'Ruby', 'PHP', 'Go', 'Rust', 'Swift',
+    'Kotlin', 'Dart', 'C#', 'Scala', 'R', 'MATLAB', 'Shell', 'Perl', 'Haskell', 'Lua',
+    
+    // Frontend
+    'React', 'Angular', 'Vue', 'Svelte', 'Next.js', 'Nuxt.js', 'Gatsby', 'HTML', 'CSS',
+    'SASS', 'LESS', 'Tailwind CSS', 'Bootstrap', 'Material-UI', 'Chakra UI', 'Redux',
+    'MobX', 'GraphQL', 'Apollo', 'jQuery',
+    
+    // Backend
+    'Node.js', 'Express', 'Django', 'Flask', 'Spring Boot', 'Laravel', 'Ruby on Rails',
+    'ASP.NET', 'FastAPI', 'NestJS', 'Strapi', 'WordPress',
+    
+    // Mobile
+    'React Native', 'Flutter', 'iOS', 'Android', 'Xamarin', 'Ionic', 'Cordova',
+    
+    // Databases
+    'MongoDB', 'PostgreSQL', 'MySQL', 'SQLite', 'Redis', 'Elasticsearch', 'Cassandra',
+    'DynamoDB', 'Oracle', 'SQL Server',
+    
+    // Cloud & DevOps
+    'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'Jenkins', 'GitLab CI', 'GitHub Actions',
+    'Terraform', 'Ansible', 'Prometheus', 'Grafana',
+    
+    // Tools & Others
+    'Git', 'REST API', 'WebSocket', 'Linux', 'Agile', 'Scrum', 'Jira', 'Figma',
+    'Adobe XD', 'Sketch', 'Postman', 'Swagger', 'WebRTC', 'Socket.io',
+    
+    // Web3 & Blockchain
+    'Web3.js', 'Solidity', 'Ethereum', 'Solana', 'Smart Contracts', 'Blockchain',
+    
+    // AI & ML
+    'TensorFlow', 'PyTorch', 'Scikit-learn', 'OpenCV', 'Natural Language Processing',
+    'Machine Learning', 'Deep Learning', 'Computer Vision'
   ]
 
   return commonTechnologies.filter(tech => 
@@ -359,31 +386,68 @@ function extractBasicInfo(text: string) {
 
 // Add function to extract full name and generate bio
 function extractFullNameAndBio(text: string): { fullName: string; bio: string } {
-  const lines = text.split('\n')
+  // Get the first few lines of text
+  const lines = text.split('\n').map(line => line.trim()).filter(Boolean)
   
-  // Extract full name (usually first line)
-  const fullName = lines[0]?.trim() || ''
+  // Look for a name in the first few lines
+  // Usually the name is one of the first lines and contains only alphabets and spaces
+  let fullName = ''
+  for (const line of lines.slice(0, 3)) { // Check first 3 lines
+    // Clean the line of common separators and contact info
+    const cleanedLine = line
+      .split(/[|•,\/\\\(\)\[\]\{\}@]/) // Split by common separators
+      .map(part => part.trim())
+      .filter(part => {
+        // Filter out parts that look like contact info
+        return !part.includes('@') && // email
+          !part.includes('.com') && // websites
+          !part.includes('+') && // phone
+          !part.match(/\d{6,}/) && // numbers
+          !part.match(/https?:\/\//) && // urls
+          part.length > 0
+      })[0] || ''
 
-  // Generate bio based on experience and projects
-  const experienceSection = text.split(/EXPERIENCE/i)[1]?.split(/PROJECTS/i)[0] || ''
-  const projectsSection = text.split(/PROJECTS/i)[1]?.split(/VOLUNTEER|ACHIEVEMENTS/i)[0] || ''
+    // Check if the cleaned line looks like a name
+    if (
+      cleanedLine &&
+      cleanedLine.length >= 2 && // At least 2 characters
+      cleanedLine.length <= 50 && // Not too long
+      /^[A-Za-z\s\.-]+$/.test(cleanedLine) && // Only letters, spaces, dots, and hyphens
+      cleanedLine.split(' ').length >= 1 && // At least one word
+      cleanedLine.split(' ').length <= 5 // Not too many words
+    ) {
+      fullName = cleanedLine
+      break
+    }
+  }
+
+  // Generate bio based on experience and skills
+  const experienceSection = text.split(/EXPERIENCE/i)[1]?.split(/PROJECTS|EDUCATION|SKILLS/i)[0] || ''
+  const projectsSection = text.split(/PROJECTS/i)[1]?.split(/VOLUNTEER|ACHIEVEMENTS|EDUCATION|SKILLS/i)[0] || ''
   
+  // Find current/most recent role
   const currentRole = experienceSection
     .split('\n')
-    .find(line => /(Engineer|Developer|Architect|Designer)/i.test(line))
+    .find(line => 
+      /(Software|Frontend|Backend|Full Stack|Mobile|iOS|Android|Web|DevOps|ML|AI|Data|Cloud|Security|QA|Test|UI\/UX)\s*(Developer|Engineer|Architect|Designer|Specialist|Analyst|Consultant)/i
+      .test(line)
+    )
     ?.replace(/^[•\-]\s*/, '')
-    .trim() || ''
+    .trim() || 'Software Developer'
 
+  // Extract key technologies
   const foundTechnologies = extractTechnologiesFromText(experienceSection + projectsSection)
   const keyTechnologies = foundTechnologies.length > 0 
     ? foundTechnologies.slice(0, 3).join(', ')
-    : 'web technologies'
+    : 'modern technologies'
 
-  const bio = currentRole 
-    ? `${currentRole} with expertise in ${keyTechnologies}. Passionate about building innovative solutions and delivering high-quality software.`
-    : `Software developer with expertise in ${keyTechnologies}. Passionate about building innovative solutions and delivering high-quality software.`
+  // Generate bio
+  const bio = `${currentRole} with expertise in ${keyTechnologies}. Passionate about building innovative solutions and delivering high-quality software.`
 
-  return { fullName, bio }
+  return { 
+    fullName: fullName || 'Name Not Found', 
+    bio 
+  }
 }
 
 export async function parseResume(file: File): Promise<Partial<Profile>> {
