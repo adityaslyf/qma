@@ -68,12 +68,29 @@ export default {
                     from: { height: "var(--radix-accordion-content-height)" },
                     to: { height: "0" },
                 },
+                wave: {
+                    '0%, 100%': { transform: 'scaleY(1)' },
+                    '50%': { transform: 'scaleY(0.5)' },
+                }
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
+                'wave': 'wave 1.2s linear infinite',
+                'bounce-delay': 'bounce 1s infinite'
             },
         },
     },
-    plugins: [tailwindcssAnimate],
+    plugins: [
+        tailwindcssAnimate,
+        function ({ addUtilities }) {
+            const newUtilities = {}
+            for (let i = 1; i <= 10; i++) {
+                newUtilities[`.animation-delay-${i * 100}`] = {
+                    'animation-delay': `${i * 0.1}s`,
+                }
+            }
+            addUtilities(newUtilities)
+        },
+    ],
 }
