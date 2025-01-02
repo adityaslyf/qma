@@ -42,7 +42,6 @@ export function ResumeDropzone({
       )}
     >
       <input {...getInputProps()} />
-      
       {isProcessing ? (
         <ParsingStatus status={status} />
       ) : (
