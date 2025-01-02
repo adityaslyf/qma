@@ -8,20 +8,27 @@ import { AchievementsSection } from "../sections/achievements-section"
 import { ResumeDropzone } from "../components/resume-dropzone"
 import { useResumeParser } from "@/hooks/use-resume-parser"
 import toast from 'react-hot-toast'
+import { useResume } from '@/contexts/resume-context'
+import { useEffect } from 'react'
 
 export default function Profile() {
   const { profile, updateProfile } = useProfile()
+  const { parsedResume } = useResume()
   const { parseResume, isProcessing } = useResumeParser()
   
+  // Initialize profile with parsed data when available
+  useEffect(() => {
+    if (parsedResume) {
+      updateProfile(parsedResume)
+    }
+  }, [parsedResume, updateProfile])
 
   const handleResumeParse = async (file: File) => {
     const toastId = toast.loading('Parsing resume...')
     
     try {
-      console.log('Starting resume parse for file:', file.name)
       const parsedData = await parseResume(file)
       if (parsedData) {
-        console.log('Successfully parsed resume:', parsedData)
         updateProfile(parsedData)
         toast.success('Resume parsed successfully', {
           id: toastId,

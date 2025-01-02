@@ -1,20 +1,24 @@
 import { ThemeProvider } from "./components/theme-provider"
 import { Header } from "./components/header"
-import { Toaster } from 'react-hot-toast'
 import { ResumeDropzone } from "./components/resume-dropzone"
+import { CustomToaster } from "./components/ui/custom-toaster"
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import { useResume } from './contexts/resume-context'
+import { parseResume } from "./lib/resume-parser"
+
 
 function App() {
   const navigate = useNavigate()
   const [isProcessing, setIsProcessing] = useState(false)
+  const { setParsedResume } = useResume()
 
-  const handleResumeParse = async () => {
+  const handleResumeParse = async (file: File) => {
     try {
       setIsProcessing(true)
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
+      const parsedData = await parseResume(file)
+      setParsedResume(parsedData)
       toast.success('Resume parsed successfully!')
       navigate('/profile')
     } catch (error) {
@@ -40,27 +44,7 @@ function App() {
             />
           </div>
         </main>
-        <Toaster 
-          position="bottom-right"
-          toastOptions={{
-            duration: 4000,
-            className: 'bg-background text-foreground border border-border',
-            success: {
-              className: 'bg-background text-foreground border-green-500',
-              iconTheme: {
-                primary: '#22c55e',
-                secondary: 'white',
-              },
-            },
-            error: {
-              className: 'bg-background text-foreground border-red-500',
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: 'white',
-              },
-            },
-          }}
-        />
+        <CustomToaster />
       </div>
     </ThemeProvider>
   )

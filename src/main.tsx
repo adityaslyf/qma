@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import ProfileWrapper from './components/ProfileWrapper'
 import { ProtectedRoute } from './components/protected-route'
 import App from './App.tsx'
+import { ResumeProvider } from './contexts/resume-context'
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -18,27 +19,29 @@ if (!clerkPubKey) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ClerkProvider publishableKey={clerkPubKey}>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route 
-            path="/" 
-            element={
-              <ProtectedRoute>
-                <App />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/profile" 
-            element={
-              <ProtectedRoute>
-                <ProfileWrapper />
-              </ProtectedRoute>
-            } 
-          />
-        </Routes>
-      </Router>
+      <ResumeProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route 
+              path="/" 
+              element={
+                <ProtectedRoute>
+                  <App />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <ProfileWrapper />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </Router>
+      </ResumeProvider>
     </ClerkProvider>
   </StrictMode>,
 )
