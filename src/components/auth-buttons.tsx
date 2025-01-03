@@ -1,10 +1,17 @@
-import { SignInButton, UserButton } from "@clerk/clerk-react"
 import { Button } from "./ui/button"
 import { useAuth } from "../hooks/user-auth"
-import { Loader2 } from "lucide-react"
+import { Loader2, User } from "lucide-react"
 
 export function AuthButtons() {
-  const { isSignedIn, isLoaded } = useAuth()
+  const { isSignedIn, isLoaded, signOut, signIn } = useAuth()
+
+  const handleSignIn = () => {
+    signIn("", (result, error) => {
+      if (error) {
+        console.error('Authentication failed:', error)
+      }
+    })
+  }
 
   if (!isLoaded) {
     return (
@@ -17,20 +24,22 @@ export function AuthButtons() {
   return (
     <div className="flex items-center gap-4">
       {!isSignedIn ? (
-        <SignInButton mode="modal">
-          <Button variant="default">
-            Sign In
-          </Button>
-        </SignInButton>
+        <Button variant="default" onClick={handleSignIn}>
+          Sign In
+        </Button>
       ) : (
-        <UserButton 
-          afterSignOutUrl="/"
-          appearance={{
-            elements: {
-              avatarBox: "h-10 w-10"
-            }
-          }}
-        />
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="rounded-full"
+          >
+            <User className="h-6 w-6" />
+          </Button>
+          <Button variant="outline" onClick={signOut}>
+            Sign Out
+          </Button>
+        </div>
       )}
     </div>
   )
