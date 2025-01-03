@@ -5,16 +5,16 @@ import { EducationSection } from "../sections/education-section"
 import { ExperienceSection } from "../sections/experience-section"
 import { ProjectsSection } from "../sections/projects-section"
 import { AchievementsSection } from "../sections/achievements-section"
-import { ResumeDropzone } from "../components/resume-dropzone"
-import { useResumeParser } from "@/hooks/use-resume-parser"
-import toast from 'react-hot-toast'
+// import { ResumeDropzone } from "../components/resume-dropzone"
+// import { useResumeParser } from "@/hooks/use-resume-parser"
+// import toast from 'react-hot-toast'
 import { useResume } from '@/contexts/resume-context'
 import { useEffect } from 'react'
 
 export default function Profile() {
   const { profile, updateProfile } = useProfile()
   const { parsedResume } = useResume()
-  const { parseResume, isProcessing } = useResumeParser()
+  // const { parseResume} = useResumeParser()
   
   // Initialize profile with parsed data when available
   useEffect(() => {
@@ -23,26 +23,26 @@ export default function Profile() {
     }
   }, [parsedResume, updateProfile])
 
-  const handleResumeParse = async (file: File) => {
-    const toastId = toast.loading('Parsing resume...')
+  // const handleResumeParse = async (file: File) => {
+  //   const toastId = toast.loading('Parsing resume...')
     
-    try {
-      const parsedData = await parseResume(file)
-      if (parsedData) {
-        updateProfile(parsedData)
-        toast.success('Resume parsed successfully', {
-          id: toastId,
-        })
-      } else {
-        throw new Error('Failed to parse resume')
-      }
-    } catch (error) {
-      console.error('Resume parse error:', error)
-      toast.error('Failed to parse resume', {
-        id: toastId,
-      })
-    }
-  }
+  //   try {
+  //     const parsedData = await parseResume(file)
+  //     if (parsedData) {
+  //       updateProfile(parsedData)
+  //       toast.success('Resume parsed successfully', {
+  //         id: toastId,
+  //       })
+  //     } else {
+  //       throw new Error('Failed to parse resume')
+  //     }
+  //   } catch (error) {
+  //     console.error('Resume parse error:', error)
+  //     toast.error('Failed to parse resume', {
+  //       id: toastId,
+  //     })
+  //   }
+  // }
 
   return (
     <div className="container max-w-6xl py-16">
