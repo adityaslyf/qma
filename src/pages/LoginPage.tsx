@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOkto } from "okto-sdk-react";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { Separator } from "@/components/ui/separator";
 
 interface LoginPageProps {
   setAuthToken: (token: string) => void;
@@ -56,83 +60,66 @@ const LoginPage: React.FC<LoginPageProps> = ({ setAuthToken, authToken, handleLo
     navigate('/');
   };
 
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "20px",
-    maxWidth: "500px",
-    margin: "0 auto",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    backgroundColor: "#fff",
-  };
-
-  const formSectionStyle: React.CSSProperties = {
-    width: "100%",
-    marginBottom: "20px",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    textAlign: "center",
-    fontSize: "24px",
-    fontWeight: "bold",
-    marginBottom: "20px",
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    margin: "10px 0",
-    padding: "10px 20px",
-    cursor: "pointer",
-    backgroundColor: "#007BFF",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    width: "100%",
-    fontSize: "16px",
-  };
-
-  const errorStyle: React.CSSProperties = {
-    color: "red",
-    fontSize: "14px",
-    marginTop: "10px",
-  };
-
   return (
-    <div style={containerStyle}>
-      <h1 style={titleStyle}>Login</h1>
+    <div className="min-h-screen flex items-center justify-center">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
+          <CardDescription className="text-center">
+            Sign in to your account to continue
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-4">
+            <Separator className="my-4" />
+            <div className="flex flex-col items-center space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Continue with Google
+              </p>
+              <div className="w-full flex justify-center">
+                {!authToken ? (
+                  <div className="google-login-container">
+                    <GoogleLogin
+                      onSuccess={handleGoogleLogin}
+                      onError={() => setError("Login Failed")}
+                      useOneTap={false}
+                      theme="filled_black"
+                      shape="pill"
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={onLogoutClick}
+                    className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90 h-10 px-4 py-2 rounded-md transition-colors"
+                  >
+                    Logout
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
 
-      {/* Google Login */}
-      <div style={formSectionStyle}>
-        <h2>Google Authentication</h2>
-        <p>Single-click authentication with Google.</p>
-        {!authToken ? (
-          <GoogleLogin
-            onSuccess={handleGoogleLogin}
-            onError={() => setError("Login Failed")}
-            useOneTap={false}
-          />
-        ) : (
-          <button style={buttonStyle} onClick={onLogoutClick}>
-            Logout
-          </button>
-        )}
-      </div>
-
-      {/* Error Display */}
-      {error && (
-        <div style={{
-          ...errorStyle,
-          padding: '10px',
-          backgroundColor: '#fff3f3',
-          borderRadius: '4px',
-          marginTop: '20px'
-        }}>
-          {error}
-        </div>
-      )}
+          {error && (
+            <Alert variant="destructive" className="mt-4">
+              <ExclamationTriangleIcon className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-4">
+          <p className="px-8 text-center text-sm text-muted-foreground">
+            By clicking continue, you agree to our{" "}
+            <a href="/terms" className="underline underline-offset-4 hover:text-primary">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" className="underline underline-offset-4 hover:text-primary">
+              Privacy Policy
+            </a>
+            .
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 };
