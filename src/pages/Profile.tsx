@@ -45,10 +45,10 @@ export default function Profile() {
   }
 
   return (
-    <div className="container max-w-4xl py-10">
-      <div className="mb-8">
+    <div className="container max-w-6xl py-16">
+      {/* <div className="mb-8">
         <ResumeDropzone onParse={handleResumeParse} isProcessing={isProcessing} />
-      </div>
+      </div> */}
 
       <Tabs defaultValue="basic">
         <TabsList className="grid w-full grid-cols-5">
