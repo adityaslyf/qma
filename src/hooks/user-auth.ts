@@ -24,6 +24,8 @@ export function useAuth() {
     }
   }, [getUserDetails])
 
+  
+
   const handleSignOut = () => {
     logOut()
     setUserDetails(null)
