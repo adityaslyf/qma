@@ -22,6 +22,7 @@
     "@react-oauth/google": "^0.12.1",
     "@supabase/supabase-js": "^2.46.2",
     "@vitejs/plugin-react": "^4.3.4",
+    "axios": "^1.7.9",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
