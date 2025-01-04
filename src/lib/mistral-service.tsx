@@ -67,75 +67,64 @@ export class MistralService {
         "email": "Email address if present",
         "phone": "Phone number if present",
         "location": "Location if present",
-        "socialLinks": [
-          {
-            "platform": "LinkedIn/GitHub/etc",
-            "url": "Profile URL"
-          }
-        ],
-        "education": [
-          {
-            "institution": "School name",
-            "degree": "Degree type",
-            "field": "Field of study",
-            "startDate": "Start date",
-            "endDate": "End date"
-          }
-        ],
-        "experience": [
-          {
-            "company": "Company name",
-            "role": "Job title",
-            "startDate": "Start date",
-            "endDate": "End date",
-            "description": "Job description",
-            "technologies": ["Technologies used"]
-          }
-        ],
-        "skills": ["List of technical and professional skills"],
-        "projects": [
-          {
-            "title": "Project name",
-            "description": "Project description",
-            "technologies": ["Technologies used"]
-          }
-        ],
-        "achievements": [
-          {
-            "title": "Achievement title",
-            "description": "Achievement description"
-          }
-        ]
+        "socialLinks": [],
+        "education": [],
+        "experience": [],
+        "skills": [],
+        "projects": [],
+        "achievements": []
       }
 
       Resume text to parse:
       ${text}
 
-      Return only the JSON object with the generated bio included in the "bio" field. No additional text.
+      Return only valid JSON with the generated bio included in the "bio" field. Ensure all string values are properly escaped.
     `;
 
     try {
       const response = await this.callMistralAPI(prompt);
-      const parsedData = JSON.parse(response);
+      console.log('Raw API response:', response);
       
-      // Ensure bio exists and is properly formatted
-      if (!parsedData.bio || parsedData.bio.trim().length === 0) {
-        // Fallback bio generation if the first attempt failed
-        const bioPrompt = `
-          Create a professional first-person bio (2-3 sentences) for someone with the following details:
-          Name: ${parsedData.name}
-          Title: ${parsedData.title}
-          Skills: ${parsedData.skills?.join(', ')}
-          Experience: ${parsedData.experience?.[0]?.company} as ${parsedData.experience?.[0]?.role}
-          
-          Make it engaging and professional, starting with "I am" or similar.
-        `;
-        
-        const bioPart = await this.callMistralAPI(bioPrompt);
-        parsedData.bio = bioPart.trim();
+      // Try to find JSON content within the response
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No valid JSON found in response');
       }
 
-      return parsedData;
+      try {
+        const parsedData = JSON.parse(jsonMatch[0]);
+        
+        // Validate required fields
+        if (!parsedData.bio || parsedData.bio.trim().length === 0) {
+          // Generate fallback bio
+          const bioPrompt = `
+            Create a professional first-person bio (2-3 sentences) for someone with the following details:
+            Name: ${parsedData.name || 'Unknown'}
+            Title: ${parsedData.title || 'Professional'}
+            Skills: ${parsedData.skills?.join(', ') || 'Various skills'}
+            Experience: ${parsedData.experience?.[0]?.company || ''} as ${parsedData.experience?.[0]?.role || ''}
+            
+            Make it engaging and professional, starting with "I am" or similar.
+          `;
+          
+          const bioPart = await this.callMistralAPI(bioPrompt);
+          parsedData.bio = bioPart.trim();
+        }
+
+        // Ensure all arrays exist
+        parsedData.socialLinks = parsedData.socialLinks || [];
+        parsedData.education = parsedData.education || [];
+        parsedData.experience = parsedData.experience || [];
+        parsedData.skills = parsedData.skills || [];
+        parsedData.projects = parsedData.projects || [];
+        parsedData.achievements = parsedData.achievements || [];
+
+        return parsedData;
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        console.log('Raw response:', response);
+        throw new Error('Failed to parse API response as JSON');
+      }
     } catch (error) {
       console.error('Resume parsing error:', error);
       throw error;
