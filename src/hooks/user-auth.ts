@@ -1,9 +1,10 @@
 import { useOkto } from "okto-sdk-react"
 import { useState, useCallback } from "react"
+import { supabase } from '@/lib/supabase'
 
 interface User {
-  // Add any user properties based on Okto's user type
-  [key: string]: any;
+  email: string;
+  user_id: string;
 }
 
 export function useAuth() {
@@ -16,6 +17,25 @@ export function useAuth() {
       const details = await getUserDetails()
       setUserDetails(details)
       setError(null)
+      
+      const { data, error: supabaseError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('user_id', details.user_id) 
+
+      if (supabaseError) throw supabaseError
+
+      if (data.length === 0) {
+        const { error: insertError } = await supabase
+          .from('users') 
+          .insert([{
+            email: details.email,
+            user_id: details.user_id,
+          }]) 
+
+        if (insertError) throw insertError
+      }
+
       return details
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
@@ -23,8 +43,6 @@ export function useAuth() {
       return null
     }
   }, [getUserDetails])
-
-  
 
   const handleSignOut = () => {
     logOut()

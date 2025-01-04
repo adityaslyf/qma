@@ -63,12 +63,6 @@ export function AuthButtons() {
                 <span className="text-sm font-medium">User ID</span>
                 <span className="text-xs text-muted-foreground">{user?.user_id}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start gap-1">
-                <span className="text-sm font-medium">Created At</span>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(Number(user?.created_at) * 1000).toLocaleDateString()}
-                </span>
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut} className="text-red-600">
                 Sign Out
