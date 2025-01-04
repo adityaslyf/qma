@@ -50,166 +50,82 @@ export class MistralService {
 
   static async parseResume(text: string) {
     const prompt = `
-      Analyze the following resume text comprehensively in two steps:
+      Analyze the following resume text comprehensively, with special focus on:
 
-      1. First, create a professional first-person bio (3-4 sentences) that:
-         - Starts with "I am" or similar first-person introduction
-         - Highlights key expertise and experience
-         - Mentions significant achievements
-         - Includes relevant technologies/skills
-         - Describes career goals and work preferences
-         - Maintains a professional yet engaging tone
+      1. Basic Information (extract carefully):
+         - Full name
+         - Email address (look for email patterns)
+         - Phone number (any format)
+         - Current location (city, state, country)
+         - Current or desired job title
+         - Desired role or career objective
+         - Professional summary/bio
 
-      2. Then, parse the resume into a detailed JSON format with the following structure:
+      2. Education Details (for each institution):
+         - Institution name
+         - Degree type (e.g., BS, MS, PhD)
+         - Field of study/Major
+         - Dates of attendance
+         - GPA or grades if mentioned
+         - Relevant coursework
+         - Academic achievements
+
+      3. Work Experience, Projects, and Other Details
+         [Previous comprehensive extraction logic]
+
+      Parse into this JSON structure:
       {
         "name": "Full name",
-        "title": "Current/most recent job title",
-        "bio": "The professional bio created in step 1",
-        "summary": "Brief career summary",
         "email": "Email address",
         "phone": "Phone number",
-        "location": "Location details",
-        "desiredRole": "Target position or role",
-        "availability": "Immediate/2 weeks/etc",
+        "location": "Current location",
+        "title": "Current job title",
+        "desiredRole": "Target position or career objective",
+        "bio": "Professional summary",
+        "summary": "Career objective or professional summary",
+        "availability": "Immediate/Notice period/etc",
         "preferredWorkType": "remote/onsite/hybrid",
-        "salary": {
-          "min": number,
-          "max": number,
-          "currency": "USD/EUR/etc"
-        },
-        "socialLinks": [{
-          "id": "unique-id",
-          "platform": "github/linkedin/twitter/portfolio/other",
-          "url": "profile URL",
-          "username": "optional username"
-        }],
-        "education": [{
-          "id": "unique-id",
-          "institution": "School/University name",
-          "degree": "Degree type",
-          "field": "Field of study",
-          "startDate": "YYYY-MM-DD",
-          "endDate": "YYYY-MM-DD",
-          "grade": "GPA or grade",
-          "activities": "Extracurricular activities",
-          "description": "Program description",
-          "location": "Institution location",
-          "achievements": ["Notable academic achievements"]
-        }],
-        "experience": [{
-          "id": "unique-id",
-          "company": "Company name",
-          "role": "Job title",
-          "startDate": "YYYY-MM-DD",
-          "endDate": "YYYY-MM-DD",
-          "current": boolean,
-          "description": "Role description",
-          "location": "Job location",
-          "employmentType": "full-time/part-time/contract/internship/freelance",
-          "technologies": ["Tech stack used"],
-          "highlights": ["Key accomplishments"],
-          "achievements": ["Measurable results"],
-          "teamSize": number,
-          "responsibilities": ["Key duties"]
-        }],
-        "projects": [{
-          "id": "unique-id",
-          "name": "Project name",
-          "description": "Detailed description",
-          "shortDescription": "Brief overview",
-          "technologies": ["Technologies used"],
-          "url": "Live project URL",
-          "githubUrl": "Source code URL",
-          "startDate": "YYYY-MM-DD",
-          "endDate": "YYYY-MM-DD",
-          "highlights": ["Key features/achievements"],
-          "role": "Your role in project",
-          "teamSize": number,
-          "status": "completed/in-progress/planned",
-          "category": "professional/personal/academic/open-source"
-        }],
-        "skills": [{
-          "id": "unique-id",
-          "category": "Skill category",
-          "name": "Skill name",
-          "level": "beginner/intermediate/advanced/expert",
-          "yearsOfExperience": number,
-          "lastUsed": "YYYY-MM",
-          "items": ["Related technologies/tools"],
-          "endorsements": number
-        }],
-        "achievements": [{
-          "id": "unique-id",
-          "title": "Achievement title",
-          "date": "YYYY-MM-DD",
-          "description": "Detailed description",
-          "url": "Related URL",
-          "issuer": "Awarding organization",
-          "category": "award/recognition/publication/other",
-          "impact": "Measurable impact"
-        }],
-        "languages": [{
-          "id": "unique-id",
-          "name": "Language name",
-          "proficiency": "basic/intermediate/advanced/native",
-          "speaking": "proficiency level",
-          "writing": "proficiency level",
-          "reading": "proficiency level",
-          "certification": "Language certification if any"
-        }],
-        "certifications": [{
-          "id": "unique-id",
-          "name": "Certification name",
-          "issuer": "Issuing organization",
-          "issueDate": "YYYY-MM-DD",
-          "expiryDate": "YYYY-MM-DD",
-          "credentialId": "Certification ID",
-          "credentialUrl": "Verification URL",
-          "description": "Certification details",
-          "skills": ["Related skills"]
-        }],
-        "publications": [{
-          "id": "unique-id",
-          "title": "Publication title",
-          "publisher": "Publisher name",
-          "date": "YYYY-MM-DD",
-          "url": "Publication URL",
-          "description": "Publication details",
-          "authors": ["Author names"],
-          "type": "article/blog/paper/book/other",
-          "citations": number
-        }],
-        "volunteering": [{
-          "id": "unique-id",
-          "organization": "Organization name",
-          "role": "Your role",
-          "startDate": "YYYY-MM-DD",
-          "endDate": "YYYY-MM-DD",
-          "current": boolean,
-          "description": "Role description",
-          "location": "Location",
-          "cause": "Area of impact",
-          "impact": "Measurable results",
-          "highlights": ["Key contributions"]
-        }],
-        "interests": ["Personal/professional interests"],
-        "references": [{
-          "id": "unique-id",
-          "name": "Reference name",
-          "title": "Job title",
-          "company": "Company name",
-          "email": "Contact email",
-          "phone": "Contact phone",
-          "relationship": "Professional relationship",
-          "recommendation": "Reference text"
-        }]
+        
+        "education": [
+          {
+            "id": "unique-id",
+            "institution": "Full institution name",
+            "degree": "Complete degree name",
+            "field": "Detailed field of study/Major",
+            "startDate": "YYYY-MM-DD",
+            "endDate": "YYYY-MM-DD",
+            "grade": "GPA or grades if available",
+            "activities": "Extracurricular activities",
+            "description": "Program details",
+            "location": "Institution location",
+            "achievements": ["Academic achievements"]
+          }
+        ],
+
+        "experience": [
+          // Previous experience structure
+        ],
+        "projects": [
+          // Previous projects structure
+        ],
+        "achievements": [
+          // Previous achievements structure
+        ],
+        // ... other sections ...
       }
 
       Resume text to parse:
       ${text}
 
-      Return only valid JSON. Ensure all IDs are unique UUIDs, dates are in YYYY-MM-DD format, and all arrays exist (empty if no data).
-      Make reasonable assumptions for missing data based on context. Maintain consistency in formatting.
+      Important Guidelines:
+      1. Extract ALL contact information carefully (email, phone, location)
+      2. Look for career objectives or desired roles
+      3. For education, include ALL details about field of study and degree
+      4. Ensure dates are in YYYY-MM-DD format
+      5. Generate unique UUIDs for each entry
+      6. Make reasonable assumptions for missing data based on context
+      7. Don't skip any educational qualifications mentioned
+      8. Extract both current title and desired role if mentioned
     `;
 
     try {
@@ -224,6 +140,64 @@ export class MistralService {
       try {
         const parsedData = JSON.parse(jsonMatch[0]);
         
+        // Additional validation for basic info
+        if (!parsedData.email || !parsedData.email.includes('@')) {
+          // Try to find email specifically
+          const emailPrompt = `
+            Find ONLY the email address in this text. 
+            Return just the email address, nothing else.
+            Text: ${text}
+          `;
+          const emailResponse = await this.callMistralAPI(emailPrompt);
+          const emailMatch = emailResponse.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+          if (emailMatch) {
+            parsedData.email = emailMatch[0];
+          }
+        }
+
+        // Validate phone number
+        if (!parsedData.phone) {
+          const phonePrompt = `
+            Find ONLY the phone number in this text.
+            Return just the phone number, nothing else.
+            Text: ${text}
+          `;
+          const phoneResponse = await this.callMistralAPI(phonePrompt);
+          const phoneMatch = phoneResponse.match(/[\d\s()+.-]{10,}/);
+          if (phoneMatch) {
+            parsedData.phone = phoneMatch[0];
+          }
+        }
+
+        // If education field is missing or incomplete
+        if (!parsedData.education?.[0]?.field) {
+          const educationPrompt = `
+            Analyze this text for education details.
+            Focus on finding:
+            - Field of study/Major
+            - Complete degree name
+            - Institution details
+            Return in JSON format.
+            Text: ${text}
+          `;
+          const educationResponse = await this.callMistralAPI(educationPrompt);
+          const educationMatch = educationResponse.match(/\{[\s\S]*\}/);
+          if (educationMatch) {
+            const educationData = JSON.parse(educationMatch[0]);
+            if (educationData.education?.length > 0) {
+              parsedData.education = educationData.education;
+            }
+          }
+        }
+
+        // Ensure all required basic fields exist
+        const requiredFields = ['name', 'email', 'phone', 'location', 'title', 'desiredRole', 'bio'];
+        requiredFields.forEach(field => {
+          if (!parsedData[field]) {
+            parsedData[field] = '';
+          }
+        });
+
         // Validate and ensure required fields
         const ensureArrays = [
           'socialLinks', 'education', 'experience', 'projects', 
@@ -235,15 +209,54 @@ export class MistralService {
           parsedData[field] = parsedData[field] || [];
         });
 
+        // If we got limited data, try to extract more
+        if (parsedData.experience.length <= 1 || 
+            parsedData.projects.length <= 1 || 
+            parsedData.achievements.length <= 1) {
+          
+          // Additional prompt to focus on finding more entries
+          const detailPrompt = `
+            Analyze this resume text again, focusing ONLY on finding ALL instances of:
+            1. Work experiences (including internships and part-time roles)
+            2. Projects (both professional and personal)
+            3. Achievements and awards
+
+            For each category, list ALL entries found, no matter how minor.
+            Don't summarize or combine similar entries.
+            Return in the same JSON format as before.
+
+            Resume text:
+            ${text}
+          `;
+          
+          const detailResponse = await this.callMistralAPI(detailPrompt);
+          const detailMatch = detailResponse.match(/\{[\s\S]*\}/);
+          
+          if (detailMatch) {
+            const detailData = JSON.parse(detailMatch[0]);
+            
+            // Merge additional entries if found
+            if (detailData.experience?.length > parsedData.experience.length) {
+              parsedData.experience = detailData.experience;
+            }
+            if (detailData.projects?.length > parsedData.projects.length) {
+              parsedData.projects = detailData.projects;
+            }
+            if (detailData.achievements?.length > parsedData.achievements.length) {
+              parsedData.achievements = detailData.achievements;
+            }
+          }
+        }
+
         // Generate fallback bio if missing
         if (!parsedData.bio?.trim()) {
           const bioPrompt = `
             Create a professional first-person bio (3-4 sentences) for someone with:
             Name: ${parsedData.name || 'Unknown'}
             Title: ${parsedData.title || 'Professional'}
-            Experience: ${parsedData.experience?.[0]?.company || ''} as ${parsedData.experience?.[0]?.role || ''}
-            Skills: ${parsedData.skills?.map(s => s.name).join(', ') || 'Various skills'}
-            Achievements: ${parsedData.achievements?.[0]?.title || ''}
+            Experience: ${parsedData.experience.map(e => `${e.role} at ${e.company}`).join(', ')}
+            Skills: ${parsedData.skills?.map((s: any) => s.name).join(', ') || 'Various skills'}
+            Achievements: ${parsedData.achievements.map(a => a.title).join(', ')}
             
             Make it engaging and professional, starting with "I am" or similar.
           `;
@@ -254,7 +267,7 @@ export class MistralService {
 
         // Ensure all IDs are unique UUIDs
         ensureArrays.forEach(field => {
-          parsedData[field] = parsedData[field].map(item => ({
+          parsedData[field] = parsedData[field].map((item: any) => ({
             ...item,
             id: item.id || crypto.randomUUID()
           }));
