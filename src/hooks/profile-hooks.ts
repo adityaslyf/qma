@@ -13,7 +13,6 @@ const initialProfile: Profile = {
   socialLinks: [],
   education: [],
   skills: [],
-  techStack: [],
   experience: [],
   achievements: [],
   projects: [],

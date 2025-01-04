@@ -1,157 +1,168 @@
-export type SocialLink = {
-  platform: 'github' | 'linkedin' | 'twitter' | 'portfolio'
-  url: string
+export interface Profile {
+  id: string
+  name: string
+  avatar?: string
+  title: string
+  bio: string
+  email: string
+  phone: string
+  location: string
+  desiredRole: string
+  summary: string
+  availability: string
+  preferredWorkType: 'remote' | 'onsite' | 'hybrid'
+  salary?: {
+    min: number
+    max: number
+    currency: string
+  }
+  socialLinks: SocialLink[]
+  education: Education[]
+  experience: Experience[]
+  projects: Project[]
+  skills: Skill[]
+  achievements: Achievement[]
+  languages: Language[]
+  certifications: Certification[]
+  publications: Publication[]
+  volunteering: Volunteering[]
+  interests: string[]
+  references: Reference[]
 }
 
-export type Education = {
+export interface SocialLink {
+  id: string
+  platform: 'github' | 'linkedin' | 'twitter' | 'portfolio' | 'other'
+  url: string
+  username?: string
+}
+
+export interface Education {
+  id: string
   institution: string
   degree: string
   field: string
   startDate: string
   endDate: string
   grade?: string
+  activities?: string
+  description?: string
+  location?: string
+  achievements?: string[]
 }
 
-export type Experience = {
+export interface Experience {
+  id: string
   company: string
   role: string
   startDate: string
   endDate: string
+  current: boolean
   description: string
+  location?: string
+  employmentType: 'full-time' | 'part-time' | 'contract' | 'internship' | 'freelance'
   technologies: string[]
+  highlights: string[]
+  achievements: string[]
+  teamSize?: number
+  responsibilities: string[]
 }
 
-export type Project = {
-  title: string
+export interface Project {
+  id: string
+  name: string
   description: string
+  shortDescription: string
   technologies: string[]
-  liveUrl?: string
+  url?: string
   githubUrl?: string
-  image?: string
+  images?: string[]
+  startDate?: string
+  endDate?: string
+  highlights: string[]
+  role?: string
+  teamSize?: number
+  status: 'completed' | 'in-progress' | 'planned'
+  category: 'professional' | 'personal' | 'academic' | 'open-source'
 }
 
-export type Achievement = {
+export interface Skill {
+  id: string
+  category: string
+  name: string
+  level: 'beginner' | 'intermediate' | 'advanced' | 'expert'
+  yearsOfExperience?: number
+  lastUsed?: string
+  items: string[]
+  endorsements?: number
+}
+
+export interface Achievement {
+  id: string
   title: string
-  description: string
   date: string
+  description: string
+  url?: string
+  issuer?: string
+  category: 'award' | 'recognition' | 'publication' | 'other'
+  impact?: string
 }
 
-export type Certificate = {
+export interface Language {
+  id: string
+  name: string
+  proficiency: 'basic' | 'intermediate' | 'advanced' | 'native'
+  speaking?: 'basic' | 'intermediate' | 'advanced' | 'native'
+  writing?: 'basic' | 'intermediate' | 'advanced' | 'native'
+  reading?: 'basic' | 'intermediate' | 'advanced' | 'native'
+  certification?: string
+}
+
+export interface Certification {
+  id: string
   name: string
   issuer: string
-  date: string
-  url?: string
+  issueDate: string
+  expiryDate?: string
+  credentialId?: string
+  credentialUrl?: string
+  description?: string
+  skills: string[]
 }
 
-export type Profile = {
+export interface Publication {
+  id: string
+  title: string
+  publisher: string
+  date: string
+  url?: string
+  description: string
+  authors: string[]
+  type: 'article' | 'blog' | 'paper' | 'book' | 'other'
+  citations?: number
+}
+
+export interface Volunteering {
+  id: string
+  organization: string
+  role: string
+  startDate: string
+  endDate?: string
+  current: boolean
+  description: string
+  location?: string
+  cause?: string
+  impact?: string
+  highlights: string[]
+}
+
+export interface Reference {
   id: string
   name: string
   title: string
-  bio: string
-  email: string
-  phone: string
-  location: string
-  avatar?: string
-  portfolioUrl?: string
-  socialLinks: SocialLink[]
-  education: Education[]
-  skills: string[]
-  techStack: string[]
-  experience: Experience[]
-  achievements: Achievement[]
-  projects: Project[]
-  certificates: Certificate[]
-  desiredRole: string
-}
-
-// Add validation types for form fields
-export type ProfileValidation = {
-  [K in keyof Profile]?: string
-}
-
-// Add types for API responses
-export type ProfileResponse = {
-  success: boolean
-  data?: Profile
-  error?: string
-}
-
-// Add types for profile updates
-export type ProfileUpdate = Partial<Profile>
-
-// Add types for section-specific updates
-export type SectionUpdate<T> = {
-  index: number
-  data: Partial<T>
-}
-
-// Add types for API requests
-export type ProfileRequest = {
-  action: 'create' | 'update' | 'delete'
-  data: ProfileUpdate
-}
-
-// Add types for resume parsing
-export type ParsedResume = Partial<Profile>
-
-// Add types for file upload
-export type FileUpload = {
-  file: File
-  type: 'avatar' | 'resume' | 'projectImage'
-}
-
-// Add types for search and filtering
-export type ProfileFilter = {
-  skills?: string[]
-  location?: string
-  experience?: number
-  role?: string
-}
-
-// Add types for sorting
-export type ProfileSort = {
-  field: keyof Profile
-  direction: 'asc' | 'desc'
-}
-
-// Add types for pagination
-export type PaginationParams = {
-  page: number
-  limit: number
-}
-
-// Add types for profile statistics
-export type ProfileStats = {
-  totalProfiles: number
-  averageExperience: number
-  topSkills: { skill: string; count: number }[]
-  locationDistribution: { location: string; count: number }[]
-}
-
-// Add types for profile visibility settings
-export type PrivacySettings = {
-  isPublic: boolean
-  showEmail: boolean
-  showPhone: boolean
-  showLocation: boolean
-}
-
-// Add types for profile completion status
-export type CompletionStatus = {
-  [K in keyof Profile]: boolean
-}
-
-// Add types for profile import/export
-export type ProfileExport = {
-  version: string
-  data: Profile
-  exportDate: string
-}
-
-// Add types for profile notifications
-export type ProfileNotification = {
-  type: 'update' | 'reminder' | 'alert'
-  message: string
-  date: string
-  read: boolean
+  company: string
+  email?: string
+  phone?: string
+  relationship: string
+  recommendation?: string
 }

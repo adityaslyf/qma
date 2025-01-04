@@ -50,42 +50,172 @@ export class MistralService {
 
   static async parseResume(text: string) {
     const prompt = `
-      Analyze the following resume text in two steps:
+      Analyze the following resume text comprehensively in two steps:
 
-      1. First, create a professional first-person bio (2-3 sentences) that:
+      1. First, create a professional first-person bio (3-4 sentences) that:
          - Starts with "I am" or similar first-person introduction
          - Highlights key expertise and experience
          - Mentions significant achievements
          - Includes relevant technologies/skills
+         - Describes career goals and work preferences
          - Maintains a professional yet engaging tone
 
-      2. Then, parse the resume into JSON format with the following structure:
+      2. Then, parse the resume into a detailed JSON format with the following structure:
       {
         "name": "Full name",
         "title": "Current/most recent job title",
-        "bio": "The professional bio you created in step 1",
-        "email": "Email address if present",
-        "phone": "Phone number if present",
-        "location": "Location if present",
-        "socialLinks": [],
-        "education": [],
-        "experience": [],
-        "skills": [],
-        "projects": [],
-        "achievements": []
+        "bio": "The professional bio created in step 1",
+        "summary": "Brief career summary",
+        "email": "Email address",
+        "phone": "Phone number",
+        "location": "Location details",
+        "desiredRole": "Target position or role",
+        "availability": "Immediate/2 weeks/etc",
+        "preferredWorkType": "remote/onsite/hybrid",
+        "salary": {
+          "min": number,
+          "max": number,
+          "currency": "USD/EUR/etc"
+        },
+        "socialLinks": [{
+          "id": "unique-id",
+          "platform": "github/linkedin/twitter/portfolio/other",
+          "url": "profile URL",
+          "username": "optional username"
+        }],
+        "education": [{
+          "id": "unique-id",
+          "institution": "School/University name",
+          "degree": "Degree type",
+          "field": "Field of study",
+          "startDate": "YYYY-MM-DD",
+          "endDate": "YYYY-MM-DD",
+          "grade": "GPA or grade",
+          "activities": "Extracurricular activities",
+          "description": "Program description",
+          "location": "Institution location",
+          "achievements": ["Notable academic achievements"]
+        }],
+        "experience": [{
+          "id": "unique-id",
+          "company": "Company name",
+          "role": "Job title",
+          "startDate": "YYYY-MM-DD",
+          "endDate": "YYYY-MM-DD",
+          "current": boolean,
+          "description": "Role description",
+          "location": "Job location",
+          "employmentType": "full-time/part-time/contract/internship/freelance",
+          "technologies": ["Tech stack used"],
+          "highlights": ["Key accomplishments"],
+          "achievements": ["Measurable results"],
+          "teamSize": number,
+          "responsibilities": ["Key duties"]
+        }],
+        "projects": [{
+          "id": "unique-id",
+          "name": "Project name",
+          "description": "Detailed description",
+          "shortDescription": "Brief overview",
+          "technologies": ["Technologies used"],
+          "url": "Live project URL",
+          "githubUrl": "Source code URL",
+          "startDate": "YYYY-MM-DD",
+          "endDate": "YYYY-MM-DD",
+          "highlights": ["Key features/achievements"],
+          "role": "Your role in project",
+          "teamSize": number,
+          "status": "completed/in-progress/planned",
+          "category": "professional/personal/academic/open-source"
+        }],
+        "skills": [{
+          "id": "unique-id",
+          "category": "Skill category",
+          "name": "Skill name",
+          "level": "beginner/intermediate/advanced/expert",
+          "yearsOfExperience": number,
+          "lastUsed": "YYYY-MM",
+          "items": ["Related technologies/tools"],
+          "endorsements": number
+        }],
+        "achievements": [{
+          "id": "unique-id",
+          "title": "Achievement title",
+          "date": "YYYY-MM-DD",
+          "description": "Detailed description",
+          "url": "Related URL",
+          "issuer": "Awarding organization",
+          "category": "award/recognition/publication/other",
+          "impact": "Measurable impact"
+        }],
+        "languages": [{
+          "id": "unique-id",
+          "name": "Language name",
+          "proficiency": "basic/intermediate/advanced/native",
+          "speaking": "proficiency level",
+          "writing": "proficiency level",
+          "reading": "proficiency level",
+          "certification": "Language certification if any"
+        }],
+        "certifications": [{
+          "id": "unique-id",
+          "name": "Certification name",
+          "issuer": "Issuing organization",
+          "issueDate": "YYYY-MM-DD",
+          "expiryDate": "YYYY-MM-DD",
+          "credentialId": "Certification ID",
+          "credentialUrl": "Verification URL",
+          "description": "Certification details",
+          "skills": ["Related skills"]
+        }],
+        "publications": [{
+          "id": "unique-id",
+          "title": "Publication title",
+          "publisher": "Publisher name",
+          "date": "YYYY-MM-DD",
+          "url": "Publication URL",
+          "description": "Publication details",
+          "authors": ["Author names"],
+          "type": "article/blog/paper/book/other",
+          "citations": number
+        }],
+        "volunteering": [{
+          "id": "unique-id",
+          "organization": "Organization name",
+          "role": "Your role",
+          "startDate": "YYYY-MM-DD",
+          "endDate": "YYYY-MM-DD",
+          "current": boolean,
+          "description": "Role description",
+          "location": "Location",
+          "cause": "Area of impact",
+          "impact": "Measurable results",
+          "highlights": ["Key contributions"]
+        }],
+        "interests": ["Personal/professional interests"],
+        "references": [{
+          "id": "unique-id",
+          "name": "Reference name",
+          "title": "Job title",
+          "company": "Company name",
+          "email": "Contact email",
+          "phone": "Contact phone",
+          "relationship": "Professional relationship",
+          "recommendation": "Reference text"
+        }]
       }
 
       Resume text to parse:
       ${text}
 
-      Return only valid JSON with the generated bio included in the "bio" field. Ensure all string values are properly escaped.
+      Return only valid JSON. Ensure all IDs are unique UUIDs, dates are in YYYY-MM-DD format, and all arrays exist (empty if no data).
+      Make reasonable assumptions for missing data based on context. Maintain consistency in formatting.
     `;
 
     try {
       const response = await this.callMistralAPI(prompt);
       console.log('Raw API response:', response);
       
-      // Try to find JSON content within the response
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error('No valid JSON found in response');
@@ -94,15 +224,26 @@ export class MistralService {
       try {
         const parsedData = JSON.parse(jsonMatch[0]);
         
-        // Validate required fields
-        if (!parsedData.bio || parsedData.bio.trim().length === 0) {
-          // Generate fallback bio
+        // Validate and ensure required fields
+        const ensureArrays = [
+          'socialLinks', 'education', 'experience', 'projects', 
+          'skills', 'achievements', 'languages', 'certifications',
+          'publications', 'volunteering', 'interests', 'references'
+        ];
+
+        ensureArrays.forEach(field => {
+          parsedData[field] = parsedData[field] || [];
+        });
+
+        // Generate fallback bio if missing
+        if (!parsedData.bio?.trim()) {
           const bioPrompt = `
-            Create a professional first-person bio (2-3 sentences) for someone with the following details:
+            Create a professional first-person bio (3-4 sentences) for someone with:
             Name: ${parsedData.name || 'Unknown'}
             Title: ${parsedData.title || 'Professional'}
-            Skills: ${parsedData.skills?.join(', ') || 'Various skills'}
             Experience: ${parsedData.experience?.[0]?.company || ''} as ${parsedData.experience?.[0]?.role || ''}
+            Skills: ${parsedData.skills?.map(s => s.name).join(', ') || 'Various skills'}
+            Achievements: ${parsedData.achievements?.[0]?.title || ''}
             
             Make it engaging and professional, starting with "I am" or similar.
           `;
@@ -111,13 +252,13 @@ export class MistralService {
           parsedData.bio = bioPart.trim();
         }
 
-        // Ensure all arrays exist
-        parsedData.socialLinks = parsedData.socialLinks || [];
-        parsedData.education = parsedData.education || [];
-        parsedData.experience = parsedData.experience || [];
-        parsedData.skills = parsedData.skills || [];
-        parsedData.projects = parsedData.projects || [];
-        parsedData.achievements = parsedData.achievements || [];
+        // Ensure all IDs are unique UUIDs
+        ensureArrays.forEach(field => {
+          parsedData[field] = parsedData[field].map(item => ({
+            ...item,
+            id: item.id || crypto.randomUUID()
+          }));
+        });
 
         return parsedData;
       } catch (parseError) {

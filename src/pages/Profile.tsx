@@ -1,100 +1,87 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
-import { useProfile } from "@/hooks/profile-hooks"
-import { BasicInfoSection } from "../sections/basic-info-section"
-import { EducationSection } from "../sections/education-section"
-import { ExperienceSection } from "../sections/experience-section"
-import { ProjectsSection } from "../sections/projects-section"
-import { AchievementsSection } from "../sections/achievements-section"
-// import { ResumeDropzone } from "../components/resume-dropzone"
-// import { useResumeParser } from "@/hooks/use-resume-parser"
-// import toast from 'react-hot-toast'
-import { useResume } from '@/contexts/resume-context'
 import { useEffect } from 'react'
+import { useProfile } from "@/contexts/profile-context"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card } from "@/components/ui/card"
+import { BasicInfoSection } from "@/components/profile/basic-info-section"
+import { ExperienceSection } from "@/components/profile/experience-section"
+import { EducationSection } from "@/components/profile/education-section"
+import { ProjectsSection } from "@/components/profile/projects-section"
+import { SkillsSection } from "@/components/profile/skills-section"
+import { AchievementsSection } from "@/components/profile/achievements-section"
+import { useResume } from '@/contexts/resume-context'
 
-export default function Profile() {
-  const { profile, updateProfile } = useProfile()
+export default function ProfilePage() {
+  const { profile, loading, error, updateProfile } = useProfile()
   const { parsedResume } = useResume()
-  // const { parseResume} = useResumeParser()
-  
-  // Initialize profile with parsed data when available
+
   useEffect(() => {
-    if (parsedResume) {
+    if (parsedResume && Object.keys(parsedResume).length > 0) {
       updateProfile(parsedResume)
     }
-  }, [parsedResume, updateProfile])
+  }, [parsedResume]) // Remove updateProfile from dependencies
 
-  // const handleResumeParse = async (file: File) => {
-  //   const toastId = toast.loading('Parsing resume...')
-    
-  //   try {
-  //     const parsedData = await parseResume(file)
-  //     if (parsedData) {
-  //       updateProfile(parsedData)
-  //       toast.success('Resume parsed successfully', {
-  //         id: toastId,
-  //       })
-  //     } else {
-  //       throw new Error('Failed to parse resume')
-  //     }
-  //   } catch (error) {
-  //     console.error('Resume parse error:', error)
-  //     toast.error('Failed to parse resume', {
-  //       id: toastId,
-  //     })
-  //   }
-  // }
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="p-6 max-w-md">
+          <h2 className="text-lg font-semibold text-red-500 mb-2">Error</h2>
+          <p className="text-muted-foreground">{error}</p>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return null
+  }
 
   return (
-    <div className="container max-w-6xl py-16">
-      {/* <div className="mb-8">
-        <ResumeDropzone onParse={handleResumeParse} isProcessing={isProcessing} />
-      </div> */}
+    <div className="container max-w-7xl py-8 space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Profile</h1>
+      </div>
 
-      <Tabs defaultValue="basic">
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs defaultValue="basic" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-6 lg:w-auto">
           <TabsTrigger value="basic">Basic Info</TabsTrigger>
-          <TabsTrigger value="education">Education</TabsTrigger>
           <TabsTrigger value="experience">Experience</TabsTrigger>
+          <TabsTrigger value="education">Education</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
+          <TabsTrigger value="skills">Skills</TabsTrigger>
           <TabsTrigger value="achievements">Achievements</TabsTrigger>
         </TabsList>
 
-        <div className="mt-6">
-          <TabsContent value="basic">
-            <BasicInfoSection
-              profile={profile}
-              onUpdate={updateProfile}
-            />
-          </TabsContent>
+        <TabsContent value="basic" className="space-y-4">
+          <BasicInfoSection />
+        </TabsContent>
 
-          <TabsContent value="education">
-            <EducationSection
-              education={profile.education}
-              onUpdate={education => updateProfile({ education })}
-            />
-          </TabsContent>
+        <TabsContent value="experience" className="space-y-4">
+          <ExperienceSection />
+        </TabsContent>
 
-          <TabsContent value="experience">
-            <ExperienceSection
-              experience={profile.experience}
-              onUpdate={experience => updateProfile({ experience })}
-            />
-          </TabsContent>
+        <TabsContent value="education" className="space-y-4">
+          <EducationSection />
+        </TabsContent>
 
-          <TabsContent value="projects">
-            <ProjectsSection
-              projects={profile.projects}
-              onUpdate={projects => updateProfile({ projects })}
-            />
-          </TabsContent>
+        <TabsContent value="projects" className="space-y-4">
+          <ProjectsSection />
+        </TabsContent>
 
-          <TabsContent value="achievements">
-            <AchievementsSection
-              achievements={profile.achievements}
-              onUpdate={achievements => updateProfile({ achievements })}
-            />
-          </TabsContent>
-        </div>
+        <TabsContent value="skills" className="space-y-4">
+          <SkillsSection />
+        </TabsContent>
+
+        <TabsContent value="achievements" className="space-y-4">
+          <AchievementsSection />
+        </TabsContent>
       </Tabs>
     </div>
   )

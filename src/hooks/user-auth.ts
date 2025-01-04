@@ -1,5 +1,5 @@
 import { useOkto } from "okto-sdk-react"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { supabase } from '@/lib/supabase'
 
 interface User {
@@ -10,6 +10,7 @@ interface User {
 export function useAuth() {
   const { getUserDetails, logOut, isLoggedIn, authenticate } = useOkto()
   const [userDetails, setUserDetails] = useState<User | null>(null)
+  const [isLoaded, setIsLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchUserDetails = useCallback(async () => {
@@ -41,8 +42,18 @@ export function useAuth() {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
       setError(errorMessage)
       return null
+    } finally {
+      setIsLoaded(true)
     }
   }, [getUserDetails])
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchUserDetails()
+    } else {
+      setIsLoaded(true)
+    }
+  }, [isLoggedIn, fetchUserDetails])
 
   const handleSignOut = () => {
     logOut()
@@ -51,7 +62,7 @@ export function useAuth() {
   }
 
   return {
-    isLoaded: true,
+    isLoaded,
     isSignedIn: isLoggedIn,
     user: userDetails,
     error,
