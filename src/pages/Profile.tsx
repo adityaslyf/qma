@@ -2,29 +2,91 @@ import { useEffect } from 'react'
 import { useProfile } from "@/contexts/profile-context"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { BasicInfoSection } from "@/components/profile/basic-info-section"
 import { ExperienceSection } from "@/components/profile/experience-section"
 import { EducationSection } from "@/components/profile/education-section"
 import { ProjectsSection } from "@/components/profile/projects-section"
 import { AchievementsSection } from "@/components/profile/achievements-section"
 import { useResume } from '@/contexts/resume-context'
+import { useToast } from "@/components/ui/custom-toaster"
+import { supabase } from '@/lib/supabase'
+import { useOkto } from 'okto-sdk-react'
 
 export default function ProfilePage() {
-  const { profile, loading, error, updateProfile } = useProfile()
+  const { profile, loading: profileLoading, error, updateProfile } = useProfile()
   const { parsedResume } = useResume()
+  const { toast } = useToast()
+  const { getUserDetails, isLoggedIn } = useOkto()
 
   useEffect(() => {
     if (parsedResume && Object.keys(parsedResume).length > 0) {
       updateProfile(parsedResume)
     }
-  }, [parsedResume]) // Remove updateProfile from dependencies
+  }, [parsedResume])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary" />
-      </div>
-    )
+  useEffect(() => {
+    console.log('Profile page mounted/updated:', {
+      isLoggedIn,
+      profile,
+      profileLoading
+    })
+  }, [isLoggedIn, profile, profileLoading])
+
+  const handleSave = async () => {
+    try {
+      const oktoDetails = await getUserDetails()
+      
+      if (!profile || !oktoDetails?.user_id) {
+        console.log('No profile or Okto user_id found', {
+          hasProfile: !!profile,
+          oktoDetails
+        });
+        toast({
+          title: "Error",
+          description: "No profile data or user found",
+          variant: "destructive",
+        })
+        return;
+      }
+
+      const profileData = {
+        user_id: oktoDetails.user_id,
+        education: profile.education || [],
+        experience: profile.experience || [],
+        projects: profile.projects || [],
+        achievements: profile.achievements || [],
+        basic_info: {
+          ...profile.basic_info,
+          email: oktoDetails.email
+        }
+      }
+
+      console.log('Attempting to save profile data:', profileData);
+
+      const { error: supabaseError } = await supabase
+        .from('profiles')
+        .upsert(profileData, {
+          onConflict: 'user_id'
+        });
+
+      if (supabaseError) {
+        console.error('Supabase error:', supabaseError);
+        throw supabaseError;
+      }
+
+      toast({
+        title: "Success",
+        description: "Profile saved successfully",
+      })
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      toast({
+        title: "Error",
+        description: typeof error === 'object' && error !== null ? (error as any).message : "Failed to save profile",
+        variant: "destructive",
+      })
+    }
   }
 
   if (error) {
@@ -46,6 +108,13 @@ export default function ProfilePage() {
     <div className="container max-w-7xl py-8 space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Profile</h1>
+        <Button 
+          onClick={handleSave}
+          className="bg-primary text-white hover:bg-primary/90"
+          disabled={!isLoggedIn}
+        >
+          Save Profile
+        </Button>
       </div>
 
       <Tabs defaultValue="basic" className="space-y-4">

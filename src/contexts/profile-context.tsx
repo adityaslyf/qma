@@ -1,67 +1,56 @@
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { Profile } from '@/types/profile'
 
 interface ProfileContextType {
   profile: Profile | null
-  setProfile: (profile: Profile) => void
-  updateProfile: (updates: Partial<Profile>) => void
   loading: boolean
   error: string | null
+  updateProfile: (data: Partial<Profile>) => void
+}
+
+const initialProfile: Profile = {
+  basic_info: {},
+  experience: [],
+  education: [],
+  projects: [],
+  achievements: []
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 
-const initialProfile: Profile = {
-  id: crypto.randomUUID(),
-  name: '',
-  title: '',
-  bio: '',
-  email: '',
-  phone: '',
-  location: '',
-  desiredRole: '',
-  summary: '',
-  availability: '',
-  preferredWorkType: 'remote',
-  socialLinks: [],
-  education: [],
-  skills: [],
-  experience: [],
-  achievements: [],
-  projects: [],
-  languages: [],
-  certifications: [],
-  publications: [],
-  volunteering: [],
-  interests: [],
-  references: []
-}
-
-export function ProfileProvider({ children }: { children: ReactNode }) {
+export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile>(initialProfile)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const updateProfile = (updates: Partial<Profile>) => {
-    try {
-      setLoading(true)
-      setProfile(prev => ({ ...prev, ...updates }))
-      setError(null)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update profile')
-    } finally {
-      setLoading(false)
-    }
+  const updateProfile = (data: Partial<Profile>) => {
+    console.log('Updating profile with:', data);
+    setProfile(prevProfile => {
+      const updatedProfile = {
+        ...prevProfile,
+        ...data,
+        basic_info: {
+          ...(prevProfile?.basic_info || {}),
+          ...(data.basic_info || {})
+        },
+        experience: data.experience || prevProfile?.experience || [],
+        education: data.education || prevProfile?.education || [],
+        projects: data.projects || prevProfile?.projects || [],
+        achievements: data.achievements || prevProfile?.achievements || []
+      };
+      console.log('Updated profile:', updatedProfile);
+      return updatedProfile;
+    })
   }
 
   return (
-    <ProfileContext.Provider value={{ profile, setProfile, updateProfile, loading, error }}>
+    <ProfileContext.Provider value={{ profile, loading, error, updateProfile }}>
       {children}
     </ProfileContext.Provider>
   )
 }
 
-export function useProfile() {
+export const useProfile = () => {
   const context = useContext(ProfileContext)
   if (context === undefined) {
     throw new Error('useProfile must be used within a ProfileProvider')

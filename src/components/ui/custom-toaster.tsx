@@ -1,27 +1,22 @@
-import { Toaster } from 'react-hot-toast'
+import { Toaster } from 'sonner'
+import { toast as sonnerToast } from 'sonner'
+
+type ToastProps = {
+  title?: string
+  description?: string
+  variant?: 'default' | 'destructive'
+}
+
+export const useToast = () => {
+  const toast = ({ title, description, variant = 'default' }: ToastProps) => {
+    sonnerToast[variant === 'destructive' ? 'error' : 'success'](title, {
+      description,
+    })
+  }
+
+  return { toast }
+}
 
 export function CustomToaster() {
-  return (
-    <Toaster 
-      position="bottom-right"
-      toastOptions={{
-        duration: 4000,
-        className: 'bg-background text-foreground border border-border',
-        success: {
-          className: 'bg-background text-foreground border-green-500',
-          iconTheme: {
-            primary: '#22c55e',
-            secondary: 'white',
-          },
-        },
-        error: {
-          className: 'bg-background text-foreground border-red-500',
-          iconTheme: {
-            primary: '#ef4444',
-            secondary: 'white',
-          },
-        },
-      }}
-    />
-  )
+  return <Toaster />
 }

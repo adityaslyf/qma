@@ -7,6 +7,8 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useResume } from './contexts/resume-context'
 import { parseResume } from "./lib/resume-parser"
+import { AuthProvider } from '@/contexts/auth-context'
+import { ProfileProvider } from '@/contexts/profile-context'
 
 
 function App() {
@@ -30,23 +32,27 @@ function App() {
   }
 
   return (
-    <ThemeProvider defaultTheme="system">
-      <div className="min-h-screen bg-background text-foreground">
-        <Header />
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-xl mx-auto">
-            <h1 className="text-3xl font-bold text-center mb-6">
-              Upload Your Resume
-            </h1>
-            <ResumeDropzone 
-              onParse={handleResumeParse} 
-              isProcessing={isProcessing} 
-            />
+    <AuthProvider>
+      <ProfileProvider>
+        <ThemeProvider defaultTheme="system">
+          <div className="min-h-screen bg-background text-foreground">
+            <Header />
+            <main className="container mx-auto px-4 py-8">
+              <div className="max-w-xl mx-auto">
+                <h1 className="text-3xl font-bold text-center mb-6">
+                  Upload Your Resume
+                </h1>
+                <ResumeDropzone 
+                  onParse={handleResumeParse} 
+                  isProcessing={isProcessing} 
+                />
+              </div>
+            </main>
+            <CustomToaster />
           </div>
-        </main>
-        <CustomToaster />
-      </div>
-    </ThemeProvider>
+        </ThemeProvider>
+      </ProfileProvider>
+    </AuthProvider>
   )
 }
 
