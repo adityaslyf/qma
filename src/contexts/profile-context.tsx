@@ -1,5 +1,6 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useCallback, useMemo } from 'react'
 import { Profile } from '@/types/profile'
+import { isEqual } from '@/lib/utils'
 
 interface ProfileContextType {
   profile: Profile | null
@@ -28,31 +29,40 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile>(initialProfile)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [loading, _setLoading] = useState(false)
+  const [error, _setError] = useState<string | null>(null)
 
-  const updateProfile = (data: Partial<Profile>) => {
-    console.log('Updating profile with:', data);
+  const updateProfile = useCallback((data: Partial<Profile>) => {
     setProfile(prevProfile => {
       const updatedProfile = {
         ...prevProfile,
-        ...data,
         basic_info: {
-          ...(prevProfile?.basic_info || initialProfile.basic_info),
+          ...prevProfile.basic_info,
           ...(data.basic_info || {})
         },
-        experience: data.experience || prevProfile?.experience || [],
-        education: data.education || prevProfile?.education || [],
-        projects: data.projects || prevProfile?.projects || [],
-        achievements: data.achievements || prevProfile?.achievements || []
+        experience: data.experience || prevProfile.experience,
+        education: data.education || prevProfile.education,
+        projects: data.projects || prevProfile.projects,
+        achievements: data.achievements || prevProfile.achievements
       };
-      console.log('Updated profile:', updatedProfile);
+
+      if (isEqual(prevProfile, updatedProfile)) {
+        return prevProfile;
+      }
+
       return updatedProfile;
-    })
-  }
+    });
+  }, []);
+
+  const value = useMemo(() => ({
+    profile,
+    loading,
+    error,
+    updateProfile
+  }), [profile, loading, error, updateProfile]);
 
   return (
-    <ProfileContext.Provider value={{ profile, loading, error, updateProfile }}>
+    <ProfileContext.Provider value={value}>
       {children}
     </ProfileContext.Provider>
   )
