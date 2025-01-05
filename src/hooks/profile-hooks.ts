@@ -2,29 +2,19 @@ import { useState } from 'react'
 import { Profile } from '@/types/profile'
 
 const initialProfile: Profile = {
-  id: crypto.randomUUID(),
-  name: '',
-  title: '',
-  bio: '',
-  email: '',
-  phone: '',
-  location: '',
-  desiredRole: '',
-  summary: '',
-  availability: '',
-  preferredWorkType: 'remote',
-  socialLinks: [],
+  basic_info: {
+    name: '',
+    title: '',
+    bio: '',
+    email: '',
+    phone: '',
+    location: '',
+    desiredRole: ''
+  },
   education: [],
-  skills: [],
   experience: [],
-  achievements: [],
   projects: [],
-  languages: [],
-  certifications: [],
-  publications: [],
-  volunteering: [],
-  interests: [],
-  references: []
+  achievements: []
 }
 
 export function useProfile() {

@@ -1,55 +1,72 @@
 export type SocialLink = {
-  platform: 'github' | 'linkedin' | 'twitter' | 'portfolio'
-  url: string
-}
+  platform: "github" | "linkedin" | "twitter" | "portfolio";
+  url: string;
+};
 
 export type Education = {
-  id?: string // Add id for list management
-  institution: string
-  degree: string
-  field: string
-  startDate: string
-  endDate: string
-  grade?: string
-}
+  id: string;
+  institution: string;
+  degree: string;
+  field: string;
+  startDate: string;
+  endDate: string;
+  grade?: string;
+  activities?: string;
+  description?: string;
+  location?: string;
+  achievements?: string[];
+};
 
 export type Experience = {
-  id?: string // Add id for list management
-  company: string
-  role: string
-  startDate: string
-  endDate: string
-  description: string
-  technologies: string[]
-  current: boolean
-  employmentType?: 'full-time' | 'part-time' | 'contract' | 'internship'
-}
+  id: string;
+  company: string;
+  role: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  technologies: string[];
+  current: boolean;
+  employmentType?: "full-time" | "part-time" | "contract" | "internship";
+  highlights?: string[];
+  achievements?: string[];
+  responsibilities?: string[];
+};
 
 export type Project = {
-  id?: string // Add id for list management
-  title: string
-  name: string
-  url: string
-  description: string
-  technologies: string[]
-  liveUrl?: string
-  githubUrl?: string
-  image?: string
-}
+  id?: string;
+  title?: string;
+  name: string;
+  url: string;
+  description: string;
+  technologies: string[];
+  liveUrl?: string;
+  githubUrl?: string;
+  image?: string;
+  shortDescription?: string;
+  images?: string[];
+  highlights?: string[];
+  status?: "planned" | "in-progress" | "completed";
+  category?: "personal" | "professional" | "open-source";
+};
 
 export type Achievement = {
-  id?: string // Add id for list management
-  title: string
-  description: string
-  date: string
-}
+  id?: string; // Add id for list management
+  title: string;
+  description: string;
+  date: string;
+  category: "other" | "award" | "certification" | "publication" | "recognition" | "volunteering" | "other";
+  url: string;
+  issuer: string;
+  impact: string;
+};
 
 export type Certificate = {
-  name: string
-  issuer: string
-  date: string
-  url?: string
-}
+  id?: string;
+  name: string;
+  issuer: string;
+  date: string;
+  url?: string;
+};
 
 export interface BasicInfo {
   name: string;
@@ -63,52 +80,74 @@ export interface BasicInfo {
 }
 
 export interface Profile {
+  id?: string;
+  name?: string;
+  title?: string;
+  bio?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  desiredRole?: string;
+  summary?: string;
+  availability?: string;
+  preferredWorkType?: string;
   basic_info: BasicInfo;
   education: Education[];
   experience: Experience[];
   projects: Project[];
   achievements: Achievement[];
   skills?: string[];
-  certificates?: Certificate[];
+  certifications?: Certificate[];
+  languages?: string[];
   socialLinks?: SocialLink[];
+  // publications?: Publication[];
+  // volunteering?: Volunteering[];
+  interests?: string[];
+  // references?: Reference[];
+}
+
+export interface Skill {
+  id: string;
+  name: string;
+  level: string;
 }
 
 export const initialProfile: Profile = {
   basic_info: {
-    name: '',
-    title: '',
-    bio: '',
-    email: '',
-    phone: '',
-    location: '',
-    desiredRole: ''
+    name: "",
+    title: "",
+    bio: "",
+    email: "",
+    phone: "",
+    location: "",
+    desiredRole: "",
   },
   education: [],
   experience: [],
   projects: [],
-  achievements: []
-}
+  achievements: [],
+};
 
 // Add validation types for form fields
 export type ProfileValidation = {
-  [K in keyof Profile]?: string
-}
+  [K in keyof Profile]?: string;
+};
 
 // Add types for API responses
 export type ProfileResponse = {
-  success: boolean
-  data?: Profile
-  error?: string
-}
+  success: boolean;
+  data?: Profile;
+  error?: string;
+};
 
 // Add types for profile updates
-export type ProfileUpdate = Partial<Profile>
+export type ProfileUpdate = Partial<Profile>;
 
 // Add types for section-specific updates
 export type SectionUpdate<T> = {
-  index: number
-  data: Partial<T>
-}
+  index: number;
+  data: Partial<T>;
+};
 
-export type ParsedResume = Partial<Profile>
+export type ParsedResume = Partial<Profile>;
 

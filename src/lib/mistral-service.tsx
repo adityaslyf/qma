@@ -1,6 +1,3 @@
-import { Experience, Skill, Achievement } from '@/types/profile'
-
-const MISTRAL_API_KEY = import.meta.env.VITE_MISTRAL_API_KEY;
 const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
 
 interface MistralResponse {
@@ -134,7 +131,6 @@ export class MistralService {
       `;
 
       const response = await this.callMistralAPI(prompt);
-      console.log('Raw API response:', response);
       
       // Look for JSON content between curly braces
       const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -142,10 +138,9 @@ export class MistralService {
         console.error('No JSON found in response:', response);
         throw new Error('Invalid response format: No JSON found');
       }
-
       try {
         const parsedData = JSON.parse(jsonMatch[0]);
-        return this.validateAndEnrichData(parsedData, text);
+        return this.validateAndEnrichData(parsedData);
       } catch (parseError) {
         console.error('JSON parse error:', parseError);
         console.error('Failed JSON content:', jsonMatch[0]);
@@ -157,32 +152,36 @@ export class MistralService {
     }
   }
 
-  private static async validateAndEnrichData(parsedData: any, originalText: string) {
-    // Ensure all required fields exist
-    const requiredFields = ['name', 'email', 'phone', 'location', 'title', 'desiredRole', 'bio'];
-    requiredFields.forEach(field => {
-      if (!parsedData[field]) {
-        parsedData[field] = '';
-      }
-    });
+  private static validateAndEnrichData(parsedData: any) {
+    // Ensure all required fields exist with proper nesting
+    const formattedData = {
+      basic_info: {
+        name: parsedData.name || '',
+        email: parsedData.email || '',
+        phone: parsedData.phone || '',
+        location: parsedData.location || '',
+        desiredRole: parsedData.desiredRole || '',
+        bio: parsedData.bio || '',
+        title: parsedData.title || ''
+      },
+      education: Array.isArray(parsedData.education) ? parsedData.education.map((edu: any) => ({
+        ...edu,
+        id: edu.id || crypto.randomUUID()
+      })) : [],
+      experience: Array.isArray(parsedData.experience) ? parsedData.experience.map((exp: any) => ({
+        ...exp,
+        id: exp.id || crypto.randomUUID()
+      })) : [],
+      projects: Array.isArray(parsedData.projects) ? parsedData.projects.map((proj: any) => ({
+        ...proj,
+        id: proj.id || crypto.randomUUID()
+      })) : [],
+      achievements: Array.isArray(parsedData.achievements) ? parsedData.achievements.map((ach: any) => ({
+        ...ach,
+        id: ach.id || crypto.randomUUID()
+      })) : []
+    };
 
-    // Ensure arrays exist
-    const requiredArrays = [
-      'education', 'experience', 'projects', 'skills', 
-      'achievements', 'languages', 'certifications'
-    ];
-    requiredArrays.forEach(field => {
-      parsedData[field] = Array.isArray(parsedData[field]) ? parsedData[field] : [];
-    });
-
-    // Add IDs to all array items
-    requiredArrays.forEach(field => {
-      parsedData[field] = parsedData[field].map((item: any) => ({
-        ...item,
-        id: item.id || crypto.randomUUID()
-      }));
-    });
-
-    return parsedData;
+    return formattedData;
   }
 }
