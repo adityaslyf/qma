@@ -29,7 +29,7 @@ export function FormSection<T>({
               onClick={() => onRemove(index)}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Remove
+              Remove 
             </Button>
           </CardContent>
         </Card>
