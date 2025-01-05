@@ -20,12 +20,21 @@ const initialProfile: Profile = {
   phone: '',
   location: '',
   desiredRole: '',
+  summary: '',
+  availability: '',
+  preferredWorkType: 'remote',
   socialLinks: [],
   education: [],
-  experience: [],
-  projects: [],
   skills: [],
-  achievements: []
+  experience: [],
+  achievements: [],
+  projects: [],
+  languages: [],
+  certifications: [],
+  publications: [],
+  volunteering: [],
+  interests: [],
+  references: []
 }
 
 export function ProfileProvider({ children }: { children: ReactNode }) {

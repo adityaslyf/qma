@@ -13,9 +13,14 @@ export function AchievementsSection({ achievements, onUpdate }: AchievementsSect
       items={achievements}
       onAdd={() => {
         onUpdate([...achievements, {
+          id: crypto.randomUUID(),
           title: '',
           description: '',
-          date: ''
+          date: '',
+          category: 'other' as const,
+          url: '',
+          issuer: '',
+          impact: ''
         }])
       }}
       onRemove={(index) => {

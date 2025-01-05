@@ -13,12 +13,18 @@ export function ExperienceSection({ experience, onUpdate }: ExperienceSectionPro
       items={experience}
       onAdd={() => {
         onUpdate([...experience, {
+          id: crypto.randomUUID(),
           company: '',
           role: '',
           startDate: '',
           endDate: '',
+          current: false,
           description: '',
-          technologies: []
+          employmentType: 'full-time',
+          technologies: [],
+          highlights: [],
+          achievements: [],
+          responsibilities: []
         }])
       }}
       onRemove={(index) => {

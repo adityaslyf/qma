@@ -1,3 +1,5 @@
+import { Experience, Skill, Achievement } from '@/types/profile'
+
 const MISTRAL_API_KEY = import.meta.env.VITE_MISTRAL_API_KEY;
 const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
 
@@ -254,9 +256,11 @@ export class MistralService {
             Create a professional first-person bio (3-4 sentences) for someone with:
             Name: ${parsedData.name || 'Unknown'}
             Title: ${parsedData.title || 'Professional'}
-            Experience: ${parsedData.experience.map(e => `${e.role} at ${e.company}`).join(', ')}
-            Skills: ${parsedData.skills?.map((s: any) => s.name).join(', ') || 'Various skills'}
-            Achievements: ${parsedData.achievements.map(a => a.title).join(', ')}
+            Experience: ${parsedData.experience.map((e: Experience) => 
+              `${e.role} at ${e.company}`
+            ).join(', ')}
+            Skills: ${parsedData.skills?.map((s: Skill) => s.name).join(', ') || 'Various skills'}
+            Achievements: ${parsedData.achievements.map((a: Achievement) => a.title).join(', ')}
             
             Make it engaging and professional, starting with "I am" or similar.
           `;

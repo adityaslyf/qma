@@ -13,12 +13,17 @@ export function ProjectsSection({ projects, onUpdate }: ProjectsSectionProps) {
       items={projects}
       onAdd={() => {
         onUpdate([...projects, {
-          title: '',
+          id: crypto.randomUUID(),
+          name: '',
           description: '',
+          shortDescription: '',
           technologies: [],
-          liveUrl: '',
+          url: '',
           githubUrl: '',
-          image: ''
+          images: [],
+          highlights: [],
+          status: 'planned',
+          category: 'personal'
         }])
       }}
       onRemove={(index) => {
@@ -29,30 +34,21 @@ export function ProjectsSection({ projects, onUpdate }: ProjectsSectionProps) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <TextField
-              label="Project Title"
-              value={project.title}
+              label="Project Name"
+              value={project.name}
               onChange={value => {
                 const newProjects = [...projects]
-                newProjects[index].title = value
+                newProjects[index] = { ...project, name: value }
                 onUpdate(newProjects)
               }}
             />
             <TextField
-              label="Image URL"
-              value={project.image || ''}
-              onChange={value => {
-                const newProjects = [...projects]
-                newProjects[index].image = value
-                onUpdate(newProjects)
-              }}
-            />
-            <TextField
-              label="Live URL"
-              value={project.liveUrl || ''}
+              label="URL"
+              value={project.url || ''}
               type="url"
               onChange={value => {
                 const newProjects = [...projects]
-                newProjects[index].liveUrl = value
+                newProjects[index] = { ...project, url: value }
                 onUpdate(newProjects)
               }}
             />

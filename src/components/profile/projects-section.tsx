@@ -19,12 +19,16 @@ export function ProjectsSection() {
       onAdd={() => {
         handleUpdate([...profile.projects, {
           id: crypto.randomUUID(),
-          name: "",
-          description: "",
+          name: '',
+          description: '',
+          shortDescription: '',
           technologies: [],
-          url: "",
-          githubUrl: "",
-          images: []
+          url: '',
+          githubUrl: '',
+          images: [],
+          highlights: [],
+          status: 'planned',
+          category: 'personal'
         }])
       }}
       onRemove={(index) => {
@@ -36,7 +40,7 @@ export function ProjectsSection() {
           <div className="grid grid-cols-2 gap-4">
             <TextField
               label="Project Name"
-              value={project.name}
+              value={project.name || ''}
               onChange={value => {
                 const newProjects = [...profile.projects]
                 newProjects[index] = { ...project, name: value }
@@ -44,8 +48,8 @@ export function ProjectsSection() {
               }}
             />
             <TextField
-              label="Project URL"
-              value={project.url}
+              label="URL"
+              value={project.url || ''}
               type="url"
               onChange={value => {
                 const newProjects = [...profile.projects]

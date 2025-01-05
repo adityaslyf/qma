@@ -14,12 +14,14 @@ export function EducationSection({
       items={education}
       onAdd={() => {
         onUpdate([...education, {
+          id: crypto.randomUUID(),
           institution: '',
           degree: '',
           field: '',
           startDate: '',
           endDate: '',
-          grade: ''
+          grade: '',
+          activities: ''
         }])
       }}
       onRemove={(index) => {

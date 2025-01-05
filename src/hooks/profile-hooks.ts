@@ -10,13 +10,21 @@ const initialProfile: Profile = {
   phone: '',
   location: '',
   desiredRole: '',
+  summary: '',
+  availability: '',
+  preferredWorkType: 'remote',
   socialLinks: [],
   education: [],
   skills: [],
   experience: [],
   achievements: [],
   projects: [],
-  certificates: []
+  languages: [],
+  certifications: [],
+  publications: [],
+  volunteering: [],
+  interests: [],
+  references: []
 }
 
 export function useProfile() {

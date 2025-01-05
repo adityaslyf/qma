@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 
 interface FormFieldProps {
   label: string
-  value: string
+  value?: string
   onChange: (value: string) => void
   error?: string
   className?: string

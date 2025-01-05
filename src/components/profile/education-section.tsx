@@ -63,7 +63,7 @@ export function EducationSection() {
             />
             <TextField
               label="Grade"
-              value={edu.grade}
+              value={edu.grade || ''}
               onChange={value => {
                 const newEducation = [...profile.education]
                 newEducation[index] = { ...edu, grade: value }

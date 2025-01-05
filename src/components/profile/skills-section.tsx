@@ -18,7 +18,10 @@ export function SkillsSection() {
       items={profile.skills}
       onAdd={() => {
         handleUpdate([...profile.skills, {
-          category: "",
+          id: crypto.randomUUID(),
+          category: '',
+          name: '',
+          level: 'beginner',
           items: []
         }])
       }}

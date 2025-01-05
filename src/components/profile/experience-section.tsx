@@ -23,9 +23,13 @@ export function ExperienceSection() {
           role: '',
           startDate: '',
           endDate: '',
+          current: false,
           description: '',
+          employmentType: 'full-time',
           technologies: [],
-          highlights: []
+          highlights: [],
+          achievements: [],
+          responsibilities: []
         }])
       }}
       onRemove={(index) => {

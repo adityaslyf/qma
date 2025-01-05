@@ -18,10 +18,13 @@ export function AchievementsSection() {
       onAdd={() => {
         handleUpdate([...profile.achievements, {
           id: crypto.randomUUID(),
-          title: "",
-          description: "",
-          date: "",
-          url: ""
+          title: '',
+          description: '',
+          date: '',
+          url: '',
+          category: 'other',
+          issuer: '',
+          impact: ''
         }])
       }}
       onRemove={(index) => {
@@ -63,7 +66,7 @@ export function AchievementsSection() {
           <TextField
             label="URL"
             type="url"
-            value={achievement.url}
+            value={achievement.url || ''}
             onChange={value => {
               const newAchievements = [...profile.achievements]
               newAchievements[index] = { ...achievement, url: value }
