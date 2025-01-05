@@ -1,5 +1,5 @@
-import { FormSection } from "../sections/form-section"
-import { TextField, TextAreaField } from "../sections/form-fields"
+import { FormSection } from "./form-section"
+import { TextField, TextAreaField } from "./form-fields"
 import { Achievement } from "@/types/profile"
 
 interface AchievementsSectionProps {
@@ -17,7 +17,7 @@ export function AchievementsSection({ achievements, onUpdate }: AchievementsSect
           title: '',
           description: '',
           date: '',
-          category: 'other' as const,
+          category: 'other',
           url: '',
           issuer: '',
           impact: ''

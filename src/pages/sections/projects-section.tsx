@@ -1,5 +1,5 @@
-import { FormSection } from "../sections/form-section"
-import { TextField, TextAreaField, TechStackField } from "../sections/form-fields"
+import { FormSection } from "./form-section"
+import { TextField, TextAreaField, TechStackField } from "./form-fields"
 import { Project } from "@/types/profile"
 
 interface ProjectsSectionProps {
@@ -16,14 +16,11 @@ export function ProjectsSection({ projects, onUpdate }: ProjectsSectionProps) {
           id: crypto.randomUUID(),
           name: '',
           description: '',
-          shortDescription: '',
           technologies: [],
           url: '',
           githubUrl: '',
-          images: [],
-          highlights: [],
-          status: 'planned' as const,
-          category: 'personal' as const
+          image: '',
+          title: '',
         }])
       }}
       onRemove={(index) => {

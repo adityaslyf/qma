@@ -4,6 +4,7 @@ export type SocialLink = {
 }
 
 export type Education = {
+  id?: string // Add id for list management
   institution: string
   degree: string
   field: string
@@ -13,16 +14,22 @@ export type Education = {
 }
 
 export type Experience = {
+  id?: string // Add id for list management
   company: string
   role: string
   startDate: string
   endDate: string
   description: string
   technologies: string[]
+  current: boolean
+  employmentType?: 'full-time' | 'part-time' | 'contract' | 'internship'
 }
 
 export type Project = {
+  id?: string // Add id for list management
   title: string
+  name: string
+  url: string
   description: string
   technologies: string[]
   liveUrl?: string
@@ -31,6 +38,7 @@ export type Project = {
 }
 
 export type Achievement = {
+  id?: string // Add id for list management
   title: string
   description: string
   date: string
@@ -43,25 +51,42 @@ export type Certificate = {
   url?: string
 }
 
-export type Profile = {
-  id: string
-  name: string
-  title: string
-  bio: string
-  email: string
-  phone: string
-  location: string
-  avatar?: string
-  portfolioUrl?: string
-  socialLinks: SocialLink[]
-  education: Education[]
-  skills: string[]
-  techStack: string[]
-  experience: Experience[]
-  achievements: Achievement[]
-  projects: Project[]
-  certificates: Certificate[]
-  desiredRole: string
+export interface BasicInfo {
+  name: string;
+  title: string;
+  bio: string;
+  email: string;
+  phone: string;
+  location: string;
+  avatar?: string;
+  desiredRole: string;
+}
+
+export interface Profile {
+  basic_info: BasicInfo;
+  education: Education[];
+  experience: Experience[];
+  projects: Project[];
+  achievements: Achievement[];
+  skills?: string[];
+  certificates?: Certificate[];
+  socialLinks?: SocialLink[];
+}
+
+export const initialProfile: Profile = {
+  basic_info: {
+    name: '',
+    title: '',
+    bio: '',
+    email: '',
+    phone: '',
+    location: '',
+    desiredRole: ''
+  },
+  education: [],
+  experience: [],
+  projects: [],
+  achievements: []
 }
 
 // Add validation types for form fields
@@ -85,73 +110,5 @@ export type SectionUpdate<T> = {
   data: Partial<T>
 }
 
-// Add types for API requests
-export type ProfileRequest = {
-  action: 'create' | 'update' | 'delete'
-  data: ProfileUpdate
-}
-
-// Add types for resume parsing
 export type ParsedResume = Partial<Profile>
 
-// Add types for file upload
-export type FileUpload = {
-  file: File
-  type: 'avatar' | 'resume' | 'projectImage'
-}
-
-// Add types for search and filtering
-export type ProfileFilter = {
-  skills?: string[]
-  location?: string
-  experience?: number
-  role?: string
-}
-
-// Add types for sorting
-export type ProfileSort = {
-  field: keyof Profile
-  direction: 'asc' | 'desc'
-}
-
-// Add types for pagination
-export type PaginationParams = {
-  page: number
-  limit: number
-}
-
-// Add types for profile statistics
-export type ProfileStats = {
-  totalProfiles: number
-  averageExperience: number
-  topSkills: { skill: string; count: number }[]
-  locationDistribution: { location: string; count: number }[]
-}
-
-// Add types for profile visibility settings
-export type PrivacySettings = {
-  isPublic: boolean
-  showEmail: boolean
-  showPhone: boolean
-  showLocation: boolean
-}
-
-// Add types for profile completion status
-export type CompletionStatus = {
-  [K in keyof Profile]: boolean
-}
-
-// Add types for profile import/export
-export type ProfileExport = {
-  version: string
-  data: Profile
-  exportDate: string
-}
-
-// Add types for profile notifications
-export type ProfileNotification = {
-  type: 'update' | 'reminder' | 'alert'
-  message: string
-  date: string
-  read: boolean
-}

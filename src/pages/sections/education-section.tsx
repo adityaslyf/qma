@@ -1,5 +1,5 @@
-import { FormSection } from "../sections/form-section"
-import { TextField } from "../sections/form-fields"
+import { FormSection } from "./form-section"
+import { TextField } from "./form-fields"
 import { Education } from "@/types/profile"
 
 export function EducationSection({
@@ -21,10 +21,7 @@ export function EducationSection({
           startDate: '',
           endDate: '',
           grade: '',
-          activities: '',
-          description: '',
-          location: '',
-          achievements: []
+          activities: ''
         }])
       }}
       onRemove={(index) => {
