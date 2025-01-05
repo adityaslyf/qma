@@ -20,24 +20,22 @@ export default function ProfilePage() {
   const { getUserDetails, isLoggedIn } = useOkto()
 
   useEffect(() => {
-    if (parsedResume && Object.keys(parsedResume).length > 0) {
-      const formattedData = {
-        ...parsedResume,
-        basic_info: {
-          ...profile.basic_info,
-          title: parsedResume.title || profile.basic_info.title,
-          name: parsedResume.name || profile.basic_info.name,
-          email: parsedResume.email || profile.basic_info.email,
-          phone: parsedResume.phone || profile.basic_info.phone,
-          location: parsedResume.location || profile.basic_info.location,
-          desiredRole: parsedResume.desiredRole || profile.basic_info.desiredRole,
-          bio: parsedResume.bio || profile.basic_info.bio
-        }
+    if (!profile || !parsedResume) return;
+
+    const formattedData = {
+      basic_info: {
+        ...profile.basic_info,
+        name: parsedResume.basic_info?.name || profile.basic_info.name,
+        email: parsedResume.basic_info?.email || profile.basic_info.email,
+        phone: parsedResume.basic_info?.phone || profile.basic_info.phone,
+        location: parsedResume.basic_info?.location || profile.basic_info.location,
+        desiredRole: parsedResume.basic_info?.desiredRole || profile.basic_info.desiredRole,
+        bio: parsedResume.basic_info?.bio || profile.basic_info.bio
       }
-      console.log('Formatted profile data:', formattedData);
-      updateProfile(formattedData)
-    }
-  }, [parsedResume, profile.basic_info])
+    };
+    
+    updateProfile(formattedData);
+  }, [parsedResume, profile, updateProfile]);
 
   useEffect(() => {
     console.log('Profile page mounted/updated:', {
@@ -71,12 +69,12 @@ export default function ProfilePage() {
         projects: profile.projects || [],
         achievements: profile.achievements || [],
         basic_info: {
-          name: profile.basic_info.name || parsedResume?.name || '',
+          name: profile.basic_info.name || parsedResume?.basic_info?.name || '',
           email: oktoDetails.email,
-          phone: profile.basic_info.phone || parsedResume?.phone || '',
-          location: profile.basic_info.location || parsedResume?.location || '',
-          desiredRole: profile.basic_info.desiredRole || parsedResume?.desiredRole || '',
-          bio: profile.basic_info.bio || parsedResume?.bio || ''
+          phone: profile.basic_info.phone || parsedResume?.basic_info?.phone || '',
+          location: profile.basic_info.location || parsedResume?.basic_info?.location || '',
+          desiredRole: profile.basic_info.desiredRole || parsedResume?.basic_info?.desiredRole || '',
+          bio: profile.basic_info.bio || parsedResume?.basic_info?.bio || ''
         }
       }
 

@@ -28,8 +28,8 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile>(initialProfile)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [loading, _setLoading] = useState(false)
+  const [error, _setError] = useState<string | null>(null)
 
   const updateProfile = (data: Partial<Profile>) => {
     console.log('Updating profile with:', data);

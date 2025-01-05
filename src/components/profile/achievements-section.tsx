@@ -21,6 +21,10 @@ export function AchievementsSection() {
           title: '',
           description: '',
           date: '',
+          category: 'other',
+          url: '',
+          issuer: '',
+          impact: ''
         }])
       }}
       onRemove={(index) => {

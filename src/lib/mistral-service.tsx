@@ -3,14 +3,14 @@ import { Experience, Skill, Achievement } from '@/types/profile'
 const MISTRAL_API_KEY = import.meta.env.VITE_MISTRAL_API_KEY;
 const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
 
-interface MistralResponse {
-  id: string;
-  choices: {
-    message: {
-      content: string;
-    };
-  }[];
-}
+// interface MistralResponse {
+//   id: string;
+//   choices: {
+//     message: {
+//       content: string;
+//     };
+//   }[];
+// }
 
 export class MistralService {
   private static async callMistralAPI(prompt: string): Promise<string> {
@@ -42,8 +42,15 @@ export class MistralService {
         throw new Error(`API call failed: ${response.statusText}`);
       }
 
-      const data: MistralResponse = await response.json();
-      return data.choices[0].message.content;
+      const data = await response.text(); // Get the response as text
+      try {
+        const jsonData = JSON.parse(data); // Attempt to parse as JSON
+        return jsonData.choices[0].message.content;
+      } catch (error) {
+        console.error('Failed to parse JSON:', error);
+        console.log('Response data:', data); // Log the raw data for debugging
+        throw new Error('Failed to parse API response as JSON');
+      }
     } catch (error) {
       console.error('Mistral API error:', error);
       throw error;
@@ -132,13 +139,11 @@ export class MistralService {
 
     try {
       const response = await this.callMistralAPI(prompt);
-      console.log('Raw API response:', response);
       
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error('No valid JSON found in response');
       }
-
       try {
         const parsedData = JSON.parse(jsonMatch[0]);
         
@@ -146,8 +151,8 @@ export class MistralService {
         if (!parsedData.email || !parsedData.email.includes('@')) {
           // Try to find email specifically
           const emailPrompt = `
-            Find ONLY the email address in this text. 
-            Return just the email address, nothing else.
+          Find ONLY the email address in this text. 
+          Return just the email address, nothing else.
             Text: ${text}
           `;
           const emailResponse = await this.callMistralAPI(emailPrompt);
@@ -163,20 +168,20 @@ export class MistralService {
             Find ONLY the phone number in this text.
             Return just the phone number, nothing else.
             Text: ${text}
-          `;
-          const phoneResponse = await this.callMistralAPI(phonePrompt);
-          const phoneMatch = phoneResponse.match(/[\d\s()+.-]{10,}/);
-          if (phoneMatch) {
-            parsedData.phone = phoneMatch[0];
+            `;
+            const phoneResponse = await this.callMistralAPI(phonePrompt);
+            const phoneMatch = phoneResponse.match(/[\d\s()+.-]{10,}/);
+            if (phoneMatch) {
+              parsedData.phone = phoneMatch[0];
+            }
           }
-        }
 
         // If education field is missing or incomplete
         if (!parsedData.education?.[0]?.field) {
           const educationPrompt = `
-            Analyze this text for education details.
-            Focus on finding:
-            - Field of study/Major
+          Analyze this text for education details.
+          Focus on finding:
+          - Field of study/Major
             - Complete degree name
             - Institution details
             Return in JSON format.
@@ -199,83 +204,90 @@ export class MistralService {
             parsedData[field] = '';
           }
         });
-
+        
         // Validate and ensure required fields
         const ensureArrays = [
           'socialLinks', 'education', 'experience', 'projects', 
           'skills', 'achievements', 'languages', 'certifications',
           'publications', 'volunteering', 'interests', 'references'
         ];
-
+        
         ensureArrays.forEach(field => {
           parsedData[field] = parsedData[field] || [];
         });
-
+        
         // If we got limited data, try to extract more
         if (parsedData.experience.length <= 1 || 
-            parsedData.projects.length <= 1 || 
-            parsedData.achievements.length <= 1) {
-          
-          // Additional prompt to focus on finding more entries
-          const detailPrompt = `
+          parsedData.projects.length <= 1 || 
+          parsedData.achievements.length <= 1) {
+            
+            // Additional prompt to focus on finding more entries
+            const detailPrompt = `
             Analyze this resume text again, focusing ONLY on finding ALL instances of:
             1. Work experiences (including internships and part-time roles)
             2. Projects (both professional and personal)
             3. Achievements and awards
-
+            
             For each category, list ALL entries found, no matter how minor.
             Don't summarize or combine similar entries.
             Return in the same JSON format as before.
-
+            
             Resume text:
             ${text}
-          `;
-          
-          const detailResponse = await this.callMistralAPI(detailPrompt);
-          const detailMatch = detailResponse.match(/\{[\s\S]*\}/);
-          
-          if (detailMatch) {
-            const detailData = JSON.parse(detailMatch[0]);
+            `;
             
-            // Merge additional entries if found
-            if (detailData.experience?.length > parsedData.experience.length) {
-              parsedData.experience = detailData.experience;
-            }
-            if (detailData.projects?.length > parsedData.projects.length) {
-              parsedData.projects = detailData.projects;
-            }
+            const detailResponse = await this.callMistralAPI(detailPrompt);
+            const detailMatch = detailResponse.match(/\{[\s\S]*\}/);
+            
+            if (detailMatch) {
+              const detailData = JSON.parse(detailMatch[0]);
+              
+              // Merge additional entries if found
+              if (detailData.experience?.length > parsedData.experience.length) {
+                parsedData.experience = detailData.experience;
+              }
+              if (detailData.projects?.length > parsedData.projects.length) {
+                parsedData.projects = detailData.projects;
+              }
             if (detailData.achievements?.length > parsedData.achievements.length) {
               parsedData.achievements = detailData.achievements;
             }
           }
         }
-
+        
         // Generate fallback bio if missing
         if (!parsedData.bio?.trim()) {
           const bioPrompt = `
-            Create a professional first-person bio (3-4 sentences) for someone with:
-            Name: ${parsedData.name || 'Unknown'}
-            Title: ${parsedData.title || 'Professional'}
-            Experience: ${parsedData.experience.map((e: Experience) => 
-              `${e.role} at ${e.company}`
-            ).join(', ')}
-            Skills: ${parsedData.skills?.map((s: Skill) => s.name).join(', ') || 'Various skills'}
-            Achievements: ${parsedData.achievements.map((a: Achievement) => a.title).join(', ')}
-            
-            Make it engaging and professional, starting with "I am" or similar.
+          Create a professional first-person bio (3-4 sentences) for someone with:
+          Name: ${parsedData.name || 'Unknown'}
+          Title: ${parsedData.title || 'Professional'}
+          Experience: ${parsedData.experience.map((e: Experience) => 
+            `${e.role} at ${e.company}`
+          ).join(', ')}
+          Skills: ${parsedData.skills?.map((s: Skill) => s.name).join(', ') || 'Various skills'}
+          Achievements: ${parsedData.achievements.map((a: Achievement) => a.title).join(', ')}
+          
+          Make it engaging and professional, starting with "I am" or similar.
           `;
           
           const bioPart = await this.callMistralAPI(bioPrompt);
           parsedData.bio = bioPart.trim();
         }
-
+        
         // Ensure all IDs are unique UUIDs
         ensureArrays.forEach(field => {
-          parsedData[field] = parsedData[field].map((item: any) => ({
-            ...item,
-            id: item.id || crypto.randomUUID()
-          }));
+            // Check if parsedData[field] is an array before mapping
+            if (Array.isArray(parsedData[field])) {
+                parsedData[field] = parsedData[field].map((item: any) => ({
+                    ...item,
+                    id: item.id || crypto.randomUUID()
+                }));
+            } else {
+                // If it's not an array, initialize it as an empty array
+                parsedData[field] = [];
+            }
         });
+        console.log("23456777777777777222222222222222222222222222222222222222")
 
         return parsedData;
       } catch (parseError) {
