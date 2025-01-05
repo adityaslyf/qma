@@ -24,18 +24,20 @@ export default function ProfilePage() {
       const formattedData = {
         ...parsedResume,
         basic_info: {
-          name: parsedResume.name || '',
-          email: parsedResume.email || '',
-          phone: parsedResume.phone || '',
-          location: parsedResume.location || '',
-          desiredRole: parsedResume.desiredRole || '',
-          bio: parsedResume.bio || ''
+          ...profile.basic_info,
+          title: parsedResume.title || profile.basic_info.title,
+          name: parsedResume.name || profile.basic_info.name,
+          email: parsedResume.email || profile.basic_info.email,
+          phone: parsedResume.phone || profile.basic_info.phone,
+          location: parsedResume.location || profile.basic_info.location,
+          desiredRole: parsedResume.desiredRole || profile.basic_info.desiredRole,
+          bio: parsedResume.bio || profile.basic_info.bio
         }
       }
       console.log('Formatted profile data:', formattedData);
       updateProfile(formattedData)
     }
-  }, [parsedResume])
+  }, [parsedResume, profile.basic_info])
 
   useEffect(() => {
     console.log('Profile page mounted/updated:', {

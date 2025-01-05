@@ -21,10 +21,6 @@ export function AchievementsSection() {
           title: '',
           description: '',
           date: '',
-          url: '',
-          category: 'other',
-          issuer: '',
-          impact: ''
         }])
       }}
       onRemove={(index) => {
@@ -63,7 +59,7 @@ export function AchievementsSection() {
               handleUpdate(newAchievements)
             }}
           />
-          <TextField
+          {/* <TextField
             label="URL"
             type="url"
             value={achievement.url || ''}
@@ -72,7 +68,7 @@ export function AchievementsSection() {
               newAchievements[index] = { ...achievement, url: value }
               handleUpdate(newAchievements)
             }}
-          />
+          /> */}
         </div>
       )}
     />

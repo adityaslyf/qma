@@ -1,5 +1,5 @@
 import { Profile } from "@/types/profile"
-import { TextField, TextAreaField } from "./form-fields"
+import { TextField, TextAreaField } from "@/components/ui/form"
 import { Avatar, AvatarImage, AvatarFallback } from "../../components/ui/avatar"
 
 interface BasicInfoSectionProps {
@@ -20,8 +20,8 @@ export function BasicInfoSection({ profile, onUpdate }: BasicInfoSectionProps) {
         <div className="flex-1 space-y-4">
           <TextField
             label="Full Name"
-            value={profile.name}
-            onChange={value => onUpdate({ name: value })}
+            value={profile.basic_info.name}
+            onChange={value => onUpdate({ basic_info: { name: value } })}
           />
           <TextField
             label="Profile Title"

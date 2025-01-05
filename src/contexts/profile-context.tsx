@@ -9,7 +9,15 @@ interface ProfileContextType {
 }
 
 const initialProfile: Profile = {
-  basic_info: {},
+  basic_info: {
+    name: '',
+    title: '',
+    bio: '',
+    email: '',
+    phone: '',
+    location: '',
+    desiredRole: ''
+  },
   experience: [],
   education: [],
   projects: [],
@@ -30,7 +38,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         ...prevProfile,
         ...data,
         basic_info: {
-          ...(prevProfile?.basic_info || {}),
+          ...(prevProfile?.basic_info || initialProfile.basic_info),
           ...(data.basic_info || {})
         },
         experience: data.experience || prevProfile?.experience || [],

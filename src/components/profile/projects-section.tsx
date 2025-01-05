@@ -21,14 +21,10 @@ export function ProjectsSection() {
           id: crypto.randomUUID(),
           name: '',
           description: '',
-          shortDescription: '',
           technologies: [],
           url: '',
-          githubUrl: '',
-          images: [],
-          highlights: [],
-          status: 'planned',
-          category: 'personal'
+          image: '',
+          title: '',
         }])
       }}
       onRemove={(index) => {

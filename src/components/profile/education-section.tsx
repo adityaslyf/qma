@@ -24,7 +24,6 @@ export function EducationSection() {
           startDate: "",
           endDate: "",
           grade: "",
-          activities: ""
         }])
       }}
       onRemove={(index) => {
