@@ -21,7 +21,19 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (parsedResume && Object.keys(parsedResume).length > 0) {
-      updateProfile(parsedResume)
+      const formattedData = {
+        ...parsedResume,
+        basic_info: {
+          name: parsedResume.name || '',
+          email: parsedResume.email || '',
+          phone: parsedResume.phone || '',
+          location: parsedResume.location || '',
+          desiredRole: parsedResume.desiredRole || '',
+          bio: parsedResume.bio || ''
+        }
+      }
+      console.log('Formatted profile data:', formattedData);
+      updateProfile(formattedData)
     }
   }, [parsedResume])
 
@@ -57,8 +69,12 @@ export default function ProfilePage() {
         projects: profile.projects || [],
         achievements: profile.achievements || [],
         basic_info: {
-          ...profile.basic_info,
-          email: oktoDetails.email
+          name: profile.basic_info.name || parsedResume?.name || '',
+          email: oktoDetails.email,
+          phone: profile.basic_info.phone || parsedResume?.phone || '',
+          location: profile.basic_info.location || parsedResume?.location || '',
+          desiredRole: profile.basic_info.desiredRole || parsedResume?.desiredRole || '',
+          bio: profile.basic_info.bio || parsedResume?.bio || ''
         }
       }
 

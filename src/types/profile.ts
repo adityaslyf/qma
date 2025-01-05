@@ -4,8 +4,8 @@ export interface Profile {
     email?: string;
     phone?: string;
     location?: string;
-    summary?: string;
-    // add other basic info fields as needed
+    desiredRole?: string;
+    bio?: string;
   };
   experience: Array<{
     company?: string;
@@ -13,7 +13,6 @@ export interface Profile {
     startDate?: string;
     endDate?: string;
     description?: string;
-    // add other experience fields as needed
   }>;
   education: Array<{
     institution?: string;
@@ -21,18 +20,30 @@ export interface Profile {
     field?: string;
     startDate?: string;
     endDate?: string;
-    // add other education fields as needed
   }>;
   projects: Array<{
     name?: string;
     description?: string;
     technologies?: string[];
-    // add other project fields as needed
   }>;
   achievements: Array<{
     title?: string;
     description?: string;
     date?: string;
-    // add other achievement fields as needed
   }>;
+}
+
+export const initialProfile: Profile = {
+  basic_info: {
+    name: '',
+    email: '',
+    phone: '',
+    location: '',
+    desiredRole: '',
+    bio: ''
+  },
+  experience: [],
+  education: [],
+  projects: [],
+  achievements: []
 }
