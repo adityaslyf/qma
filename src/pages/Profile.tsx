@@ -6,7 +6,6 @@ import { BasicInfoSection } from "@/components/profile/basic-info-section"
 import { ExperienceSection } from "@/components/profile/experience-section"
 import { EducationSection } from "@/components/profile/education-section"
 import { ProjectsSection } from "@/components/profile/projects-section"
-import { SkillsSection } from "@/components/profile/skills-section"
 import { AchievementsSection } from "@/components/profile/achievements-section"
 import { useResume } from '@/contexts/resume-context'
 
@@ -50,12 +49,11 @@ export default function ProfilePage() {
       </div>
 
       <Tabs defaultValue="basic" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto">
           <TabsTrigger value="basic">Basic Info</TabsTrigger>
           <TabsTrigger value="experience">Experience</TabsTrigger>
           <TabsTrigger value="education">Education</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
-          <TabsTrigger value="skills">Skills</TabsTrigger>
           <TabsTrigger value="achievements">Achievements</TabsTrigger>
         </TabsList>
 
@@ -73,10 +71,6 @@ export default function ProfilePage() {
 
         <TabsContent value="projects" className="space-y-4">
           <ProjectsSection />
-        </TabsContent>
-
-        <TabsContent value="skills" className="space-y-4">
-          <SkillsSection />
         </TabsContent>
 
         <TabsContent value="achievements" className="space-y-4">
