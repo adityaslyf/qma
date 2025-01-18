@@ -1,5 +1,5 @@
 import { Button } from "./ui/button"
-import { useAuth } from "../hooks/user-auth"
+import { useAuth } from "@/hooks/user-auth"
 import { Loader2, User } from "lucide-react"
 import { useEffect } from "react"
 import {

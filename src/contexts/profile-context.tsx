@@ -29,30 +29,39 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile>(initialProfile)
-  const [loading, _setLoading] = useState(false)
-  const [error, _setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const updateProfile = useCallback((data: Partial<Profile>) => {
-    setProfile(prevProfile => {
-      const updatedProfile = {
-        ...prevProfile,
-        basic_info: {
-          ...prevProfile.basic_info,
-          ...(data.basic_info || {})
-        },
-        experience: data.experience || prevProfile.experience,
-        education: data.education || prevProfile.education,
-        projects: data.projects || prevProfile.projects,
-        achievements: data.achievements || prevProfile.achievements
-      };
+    setLoading(true)
+    try {
+      setProfile(prevProfile => {
+        const updatedProfile = {
+          ...prevProfile,
+          basic_info: {
+            ...prevProfile.basic_info,
+            ...(data.basic_info || {})
+          },
+          experience: data.experience || prevProfile.experience,
+          education: data.education || prevProfile.education,
+          projects: data.projects || prevProfile.projects,
+          achievements: data.achievements || prevProfile.achievements
+        }
 
-      if (isEqual(prevProfile, updatedProfile)) {
-        return prevProfile;
-      }
+        // Only update if there are actual changes
+        if (isEqual(prevProfile, updatedProfile)) {
+          return prevProfile
+        }
 
-      return updatedProfile;
-    });
-  }, []);
+        console.log('Profile updated:', updatedProfile)
+        return updatedProfile
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   const value = useMemo(() => ({
     profile,

@@ -6,6 +6,7 @@ interface User {
   id: string;
   email: string;
   user_id: string;
+  hasProfile?: boolean;
 }
 
 export function useAuth() {
@@ -16,28 +17,31 @@ export function useAuth() {
 
   const fetchUserDetails = useCallback(async () => {
     try {
-      console.log('Fetching user details, isLoggedIn:', isLoggedIn)
+      if (!isLoggedIn) {
+        setUserDetails(null)
+        setIsLoaded(true)
+        return
+      }
+
       const details = await getUserDetails()
-      console.log('Okto user details:', details)
       
       if (!details?.email || !details?.user_id) {
         throw new Error('Invalid user details from Okto')
       }
 
-      // First try to get the user
-      let { data: existingUser, error: fetchError } = await supabase
+      // Get user and profile data
+      const { data: existingUser, error: userError } = await supabase
         .from('users')
         .select('*')
         .eq('user_id', details.user_id)
         .single()
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        throw fetchError
+      if (userError && userError.code !== 'PGRST116') {
+        throw userError
       }
 
       // If user doesn't exist, create one
       if (!existingUser) {
-        console.log('Creating new user in Supabase:', details)
         const { data: newUser, error: insertError } = await supabase
           .from('users')
           .insert([{
@@ -48,53 +52,38 @@ export function useAuth() {
           .single()
 
         if (insertError) throw insertError
-        existingUser = newUser
+        setUserDetails({
+          id: newUser.id,
+          email: newUser.email,
+          user_id: newUser.user_id
+        })
+      } else {
+        setUserDetails({
+          id: existingUser.id,
+          email: existingUser.email,
+          user_id: existingUser.user_id
+        })
       }
 
-      console.log('User in Supabase:', existingUser)
-      const userData = {
-        id: existingUser.id,
-        email: existingUser.email,
-        user_id: existingUser.user_id
-      }
-      setUserDetails(userData)
       setError(null)
-
-      return userData
-
     } catch (error) {
-      console.error('Error in fetchUserDetails:', error)
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
-      setError(errorMessage)
-      setUserDetails(null)
-      return null
+      console.error('Error fetching user details:', error)
+      setError(error instanceof Error ? error.message : 'Failed to fetch user details')
     } finally {
       setIsLoaded(true)
     }
   }, [getUserDetails, isLoggedIn])
 
+  // Fetch user details when auth state changes
   useEffect(() => {
-    const initAuth = async () => {
-      if (isLoggedIn) {
-        console.log('User is logged in, fetching details...')
-        await fetchUserDetails()
-      } else {
-        console.log('User is not logged in')
-        setUserDetails(null)
-        setIsLoaded(true)
-      }
-    }
-
-    initAuth()
-  }, [isLoggedIn, fetchUserDetails])
+    fetchUserDetails()
+  }, [fetchUserDetails, isLoggedIn])
 
   return {
+    userDetails,
     isLoaded,
-    isSignedIn: isLoggedIn,
-    user: userDetails,
     error,
     fetchUserDetails,
-    signOut: logOut,
-    signIn: authenticate
+    isSignedIn: !!userDetails
   }
 }

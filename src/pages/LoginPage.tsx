@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/user-auth";
 
 interface LoginPageProps {
   setAuthToken: (token: string) => void;
@@ -24,13 +25,18 @@ interface AuthError {
 const LoginPage: React.FC<LoginPageProps> = ({ setAuthToken, authToken, handleLogout }) => {
   const navigate = useNavigate();
   const { authenticate, isLoggedIn } = useOkto();
+  const { userDetails } = useAuth();
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate('/');
+      if (userDetails?.hasProfile) {
+        navigate('/profile');
+      } else {
+        navigate('/');
+      }
     }
-  }, [isLoggedIn, navigate]);
+  }, [isLoggedIn, userDetails, navigate]);
 
   const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
     try {

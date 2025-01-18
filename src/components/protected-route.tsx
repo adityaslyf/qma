@@ -1,6 +1,6 @@
-import { useAuth } from "../hooks/user-auth"
-import { ReactNode } from "react"
-import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/hooks/user-auth"
+import { ReactNode, useEffect } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import { Loader } from "./ui/loader"
 
 interface ProtectedRouteProps {
@@ -8,8 +8,17 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isSignedIn, isLoaded } = useAuth()
+  const { isSignedIn, isLoaded, userDetails } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      navigate('/login', { replace: true })
+    } else if (isLoaded && isSignedIn && location.pathname === '/' && userDetails?.hasProfile) {
+      navigate('/profile', { replace: true })
+    }
+  }, [isLoaded, isSignedIn, userDetails, navigate, location])
 
   if (!isLoaded) {
     return (
@@ -17,11 +26,6 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         <Loader size="lg" />
       </div>
     )
-  }
-
-  if (!isSignedIn) {
-    navigate('/login', { replace: true })
-    return null
   }
 
   return <>{children}</>
