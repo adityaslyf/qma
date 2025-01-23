@@ -25,7 +25,7 @@ export default function ProfilePage() {
   const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
-    const initializeProfile = async () => {
+    const fetchExistingProfile = async () => {
       try {
         if (!isLoggedIn) return
 
@@ -33,19 +33,24 @@ export default function ProfilePage() {
         if (!oktoDetails?.user_id) return
 
         // Fetch profile from Supabase
-        const { data: existingProfile } = await supabase
+        const { data: existingProfile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', oktoDetails.user_id)
           .single()
 
+        if (profileError) {
+          throw profileError
+        }
+
         if (existingProfile) {
+          console.log('Loading existing profile:', existingProfile)
           updateProfile(existingProfile)
         }
         
         setIsInitialized(true)
       } catch (error) {
-        console.error('Error initializing profile:', error)
+        console.error('Error loading profile:', error)
         toast({
           title: "Error",
           description: "Failed to load profile data",
@@ -54,8 +59,8 @@ export default function ProfilePage() {
       }
     }
 
-    initializeProfile()
-  }, [isLoggedIn, getUserDetails, updateProfile])
+    fetchExistingProfile()
+  }, [isLoggedIn, getUserDetails, updateProfile, toast])
 
   // Debug logging
   useEffect(() => {

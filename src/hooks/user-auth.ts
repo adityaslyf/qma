@@ -10,7 +10,7 @@ interface User {
 }
 
 export function useAuth() {
-  const { getUserDetails, logOut, isLoggedIn, authenticate } = useOkto()
+  const { getUserDetails, isLoggedIn } = useOkto()
   const [userDetails, setUserDetails] = useState<User | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -29,39 +29,18 @@ export function useAuth() {
         throw new Error('Invalid user details from Okto')
       }
 
-      // Get user and profile data
-      const { data: existingUser, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('user_id', details.user_id)
-        .single()
+      // Get both user and profile data
+      const [{ data: existingUser }, { data: existingProfile }] = await Promise.all([
+        supabase.from('users').select('*').eq('user_id', details.user_id).single(),
+        supabase.from('profiles').select('*').eq('user_id', details.user_id).single()
+      ])
 
-      if (userError && userError.code !== 'PGRST116') {
-        throw userError
-      }
-
-      // If user doesn't exist, create one
-      if (!existingUser) {
-        const { data: newUser, error: insertError } = await supabase
-          .from('users')
-          .insert([{
-            email: details.email,
-            user_id: details.user_id
-          }])
-          .select()
-          .single()
-
-        if (insertError) throw insertError
-        setUserDetails({
-          id: newUser.id,
-          email: newUser.email,
-          user_id: newUser.user_id
-        })
-      } else {
+      if (existingUser) {
         setUserDetails({
           id: existingUser.id,
           email: existingUser.email,
-          user_id: existingUser.user_id
+          user_id: existingUser.user_id,
+          hasProfile: !!existingProfile // Set hasProfile based on profile existence
         })
       }
 
@@ -74,10 +53,9 @@ export function useAuth() {
     }
   }, [getUserDetails, isLoggedIn])
 
-  // Fetch user details when auth state changes
   useEffect(() => {
     fetchUserDetails()
-  }, [fetchUserDetails, isLoggedIn])
+  }, [fetchUserDetails])
 
   return {
     userDetails,

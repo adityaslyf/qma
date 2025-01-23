@@ -10,15 +10,15 @@ import { parseResume } from "./lib/resume-parser"
 import { useAuth } from '@/hooks/user-auth'
 import { AuthProvider } from '@/contexts/auth-context'
 import { ProfileProvider } from '@/contexts/profile-context'
-
+import { supabase } from '@/lib/supabase'
+import { useOkto } from 'okto-sdk-react'
 function App() {
   const navigate = useNavigate()
   const [isProcessing, setIsProcessing] = useState(false)
   const { setParsedResume } = useResume()
   const { userDetails } = useAuth()
-
+  const { getUserDetails } = useOkto()
   useEffect(() => {
-    // If user has profile data, redirect to profile page
     if (userDetails?.hasProfile) {
       navigate('/profile')
     }
@@ -32,9 +32,19 @@ function App() {
       if (parsedData) {
         console.log('Parsed resume data:', parsedData)
         setParsedResume(parsedData)
+        
+        // Save to Supabase and navigate
+        const oktoDetails = await getUserDetails()
+        if (oktoDetails?.user_id) {
+          await supabase
+            .from('profiles')
+            .upsert({
+              user_id: oktoDetails.user_id,
+              ...parsedData
+            })
+        }
+        
         navigate('/profile')
-      } else {
-        throw new Error('No data returned from resume parser')
       }
     } catch (error) {
       console.error('Resume parsing error:', error)
