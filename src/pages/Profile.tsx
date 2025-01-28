@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useProfile } from "@/contexts/profile-context"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BasicInfoSection } from "@/components/profile/basic-info-section"
 import { ExperienceSection } from "@/components/profile/experience-section"
@@ -11,10 +9,6 @@ import { AchievementsSection } from "@/components/profile/achievements-section"
 import { useResume } from '@/contexts/resume-context'
 import { useToast } from "@/components/ui/custom-toaster"
 import { supabase } from '@/lib/supabase'
-import { useOkto } from 'okto-sdk-react'
-import { Profile } from '@/types/profile'
-import { isEqual } from 'lodash'
-import { Loader } from "../components/ui/loader"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useAuth } from "@/hooks/user-auth"
 

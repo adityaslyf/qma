@@ -35,7 +35,7 @@ export function useAuth() {
       }
 
       // Get user data with proper headers
-      const { data: existingUser, error: userError } = await supabase
+      const { data: existingUser} = await supabase
         .from('users')
         .select('id, email, user_id')
         .eq('user_id', details.user_id)
@@ -57,7 +57,7 @@ export function useAuth() {
         if (createError) throw createError
         
         // Use the newly created user
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', newUser.user_id)
@@ -72,7 +72,7 @@ export function useAuth() {
         })
       } else {
         // User exists, check for profile
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile} = await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', existingUser.user_id)

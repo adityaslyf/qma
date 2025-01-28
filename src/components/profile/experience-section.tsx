@@ -2,7 +2,6 @@ import { useProfile } from "@/contexts/profile-context"
 import { FormSection } from "@/components/ui/form-section"
 import { TextField, TextAreaField } from "@/components/ui/form"
 import { TechStackField } from "@/components/ui/tech-stack-field"
-import { Experience } from "@/types/profile"
 
 export function ExperienceSection() {
   const { profile, updateProfile } = useProfile()

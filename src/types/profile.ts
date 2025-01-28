@@ -151,10 +151,10 @@ export type SectionUpdate<T> = {
 
 export type ParsedResume = Partial<Profile>;
 
-interface User {
-  id: string;
-  email: string;
-  user_id: string;
-  hasProfile?: boolean;
-}
+// interface User {
+//   id: string;
+//   email: string;
+//   user_id: string;
+//   hasProfile?: boolean;
+// }
 

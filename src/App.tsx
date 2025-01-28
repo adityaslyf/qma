@@ -3,21 +3,18 @@ import { Header } from "./components/header"
 import { ResumeDropzone } from "./components/resume-dropzone"
 import { CustomToaster } from "./components/ui/custom-toaster"
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useResume } from './contexts/resume-context'
 import { parseResume } from "./lib/resume-parser"
-import { useAuth } from '@/hooks/user-auth'
 import { AuthProvider } from '@/contexts/auth-context'
 import { ProfileProvider } from '@/contexts/profile-context'
-import { supabase } from '@/lib/supabase'
-import { useOkto } from 'okto-sdk-react'
 
 function App() {
   const navigate = useNavigate()
   const [isProcessing, setIsProcessing] = useState(false)
   const { setParsedResume } = useResume()
-  const { userDetails } = useAuth()
+
 
   const handleResumeParse = async (file: File) => {
     try {
