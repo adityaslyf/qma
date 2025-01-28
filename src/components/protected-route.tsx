@@ -1,7 +1,6 @@
 import { useAuth } from "@/hooks/user-auth"
 import { ReactNode, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { Loader } from "./ui/loader"
 import { LoadingSpinner } from "./ui/loading-spinner"
 
 interface ProtectedRouteProps {
@@ -14,21 +13,18 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation()
 
   useEffect(() => {
-    const checkAuthAndRedirect = async () => {
-      if (!isLoaded) return
+    if (!isLoaded) return
 
-      if (!isSignedIn) {
-        navigate('/login', { replace: true })
-        return
-      }
-
-      // If user has a profile and they're not already on the profile page
-      if (userDetails?.hasProfile && location.pathname !== '/profile') {
-        navigate('/profile', { replace: true })
-      }
+    if (!isSignedIn) {
+      navigate('/login', { replace: true })
+      return
     }
 
-    checkAuthAndRedirect()
+    // Only redirect to profile if user has a saved profile
+    // and they're trying to access the home page
+    if (userDetails?.hasProfile && location.pathname === '/') {
+      navigate('/profile', { replace: true })
+    }
   }, [isLoaded, isSignedIn, userDetails, navigate, location.pathname])
 
   if (!isLoaded) {

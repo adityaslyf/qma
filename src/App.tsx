@@ -18,13 +18,6 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false)
   const { setParsedResume } = useResume()
   const { userDetails } = useAuth()
-  const { getUserDetails } = useOkto()
-
-  useEffect(() => {
-    if (userDetails?.hasProfile) {
-      navigate('/profile')
-    }
-  }, [userDetails, navigate])
 
   const handleResumeParse = async (file: File) => {
     try {
@@ -34,7 +27,6 @@ function App() {
       if (parsedData) {
         console.log('Parsed resume data:', parsedData)
         setParsedResume(parsedData)
-        // Remove automatic save and just navigate
         navigate('/profile')
       }
     } catch (error) {
