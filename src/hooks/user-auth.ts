@@ -14,9 +14,14 @@ export function useAuth() {
   const [userDetails, setUserDetails] = useState<User | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const fetchUserDetails = useCallback(async () => {
+    if (isLoading) return
+    
     try {
+      setIsLoading(true)
+      
       if (!isLoggedIn) {
         setUserDetails(null)
         setIsLoaded(true)
@@ -29,18 +34,56 @@ export function useAuth() {
         throw new Error('Invalid user details from Okto')
       }
 
-      // Get both user and profile data
-      const [{ data: existingUser }, { data: existingProfile }] = await Promise.all([
-        supabase.from('users').select('*').eq('user_id', details.user_id).single(),
-        supabase.from('profiles').select('*').eq('user_id', details.user_id).single()
-      ])
+      // Get user data with proper headers
+      const { data: existingUser, error: userError } = await supabase
+        .from('users')
+        .select('id, email, user_id')
+        .eq('user_id', details.user_id)
+        .maybeSingle()
+        .throwOnError()
 
-      if (existingUser) {
+      // If user doesn't exist, create one
+      if (!existingUser) {
+        const { data: newUser, error: createError } = await supabase
+          .from('users')
+          .insert([{
+            email: details.email,
+            user_id: details.user_id
+          }])
+          .select('id, email, user_id')
+          .single()
+          .throwOnError()
+
+        if (createError) throw createError
+        
+        // Use the newly created user
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', newUser.user_id)
+          .maybeSingle()
+          .throwOnError()
+
+        setUserDetails({
+          id: newUser.id,
+          email: newUser.email,
+          user_id: newUser.user_id,
+          hasProfile: !!profile
+        })
+      } else {
+        // User exists, check for profile
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', existingUser.user_id)
+          .maybeSingle()
+          .throwOnError()
+
         setUserDetails({
           id: existingUser.id,
           email: existingUser.email,
           user_id: existingUser.user_id,
-          hasProfile: !!existingProfile // Set hasProfile based on profile existence
+          hasProfile: !!profile
         })
       }
 
@@ -48,14 +91,18 @@ export function useAuth() {
     } catch (error) {
       console.error('Error fetching user details:', error)
       setError(error instanceof Error ? error.message : 'Failed to fetch user details')
+      setUserDetails(null)
     } finally {
       setIsLoaded(true)
+      setIsLoading(false)
     }
-  }, [getUserDetails, isLoggedIn])
+  }, [getUserDetails, isLoggedIn, isLoading])
 
   useEffect(() => {
-    fetchUserDetails()
-  }, [fetchUserDetails])
+    if (isLoggedIn && !userDetails && !isLoading) {
+      fetchUserDetails()
+    }
+  }, [isLoggedIn, userDetails, fetchUserDetails, isLoading])
 
   return {
     userDetails,

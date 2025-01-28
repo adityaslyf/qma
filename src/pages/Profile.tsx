@@ -16,12 +16,14 @@ import { Profile } from '@/types/profile'
 import { isEqual } from 'lodash'
 import { Loader } from "../components/ui/loader"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { useAuth } from "@/hooks/user-auth"
 
 export default function ProfilePage() {
   const { profile, loading: profileLoading, error, updateProfile } = useProfile()
   const { parsedResume } = useResume()
   const { toast } = useToast()
   const { getUserDetails, isLoggedIn } = useOkto()
+  const { userDetails } = useAuth()
   const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
@@ -72,28 +74,12 @@ export default function ProfilePage() {
     })
   }, [isLoggedIn, profile, profileLoading, isInitialized])
 
-  // Add effect to handle parsed resume data
+  // Load parsed resume data when component mounts
   useEffect(() => {
-    if (!parsedResume) return
-
-    const mergedProfile = {
-      basic_info: {
-        name: parsedResume.basic_info?.name || profile?.basic_info.name || '',
-        title: parsedResume.basic_info?.title || profile?.basic_info.title || '',
-        email: parsedResume.basic_info?.email || profile?.basic_info.email || '',
-        phone: parsedResume.basic_info?.phone || profile?.basic_info.phone || '',
-        location: parsedResume.basic_info?.location || profile?.basic_info.location || '',
-        desiredRole: parsedResume.basic_info?.desiredRole || profile?.basic_info.desiredRole || '',
-        bio: parsedResume.basic_info?.bio || profile?.basic_info.bio || ''
-      },
-      experience: parsedResume.experience || profile?.experience || [],
-      education: parsedResume.education || profile?.education || [],
-      projects: parsedResume.projects || profile?.projects || [],
-      achievements: parsedResume.achievements || profile?.achievements || []
+    if (parsedResume && !profile.basic_info.name) {
+      updateProfile(parsedResume)
     }
-
-    updateProfile(mergedProfile)
-  }, [parsedResume, profile?.basic_info])
+  }, [parsedResume, profile.basic_info.name, updateProfile])
 
   if (!isInitialized || profileLoading) {
     return <LoadingSpinner />
@@ -101,48 +87,24 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     try {
-      const oktoDetails = await getUserDetails()
-      
-      if (!profile || !oktoDetails?.user_id) {
-        console.log('No profile or Okto user_id found', {
-          hasProfile: !!profile,
-          oktoDetails
-        });
-        toast({
-          title: "Error",
-          description: "No profile data or user found",
-          variant: "destructive",
-        })
-        return;
+      if (!userDetails?.user_id) {
+        throw new Error('User not authenticated')
       }
 
       const profileData = {
-        user_id: oktoDetails.user_id,
-        education: profile.education || [],
-        experience: profile.experience || [],
-        projects: profile.projects || [],
-        achievements: profile.achievements || [],
-        basic_info: {
-          name: profile.basic_info.name || parsedResume?.basic_info?.name || '',
-          email: oktoDetails.email,
-          phone: profile.basic_info.phone || parsedResume?.basic_info?.phone || '',
-          location: profile.basic_info.location || parsedResume?.basic_info?.location || '',
-          desiredRole: profile.basic_info.desiredRole || parsedResume?.basic_info?.desiredRole || '',
-          bio: profile.basic_info.bio || parsedResume?.basic_info?.bio || ''
-        }
+        user_id: userDetails.user_id,
+        ...profile
       }
-
-      console.log('Attempting to save profile data:', profileData);
 
       const { error: supabaseError } = await supabase
         .from('profiles')
         .upsert(profileData, {
           onConflict: 'user_id'
-        });
+        })
 
       if (supabaseError) {
-        console.error('Supabase error:', supabaseError);
-        throw supabaseError;
+        console.error('Supabase error:', supabaseError)
+        throw supabaseError
       }
 
       toast({

@@ -12,12 +12,14 @@ import { AuthProvider } from '@/contexts/auth-context'
 import { ProfileProvider } from '@/contexts/profile-context'
 import { supabase } from '@/lib/supabase'
 import { useOkto } from 'okto-sdk-react'
+
 function App() {
   const navigate = useNavigate()
   const [isProcessing, setIsProcessing] = useState(false)
   const { setParsedResume } = useResume()
   const { userDetails } = useAuth()
   const { getUserDetails } = useOkto()
+
   useEffect(() => {
     if (userDetails?.hasProfile) {
       navigate('/profile')
@@ -32,18 +34,7 @@ function App() {
       if (parsedData) {
         console.log('Parsed resume data:', parsedData)
         setParsedResume(parsedData)
-        
-        // Save to Supabase and navigate
-        const oktoDetails = await getUserDetails()
-        if (oktoDetails?.user_id) {
-          await supabase
-            .from('profiles')
-            .upsert({
-              user_id: oktoDetails.user_id,
-              ...parsedData
-            })
-        }
-        
+        // Remove automatic save and just navigate
         navigate('/profile')
       }
     } catch (error) {
