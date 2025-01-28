@@ -7,14 +7,22 @@ import { Experience } from "@/types/profile"
 export function ExperienceSection() {
   const { profile, updateProfile } = useProfile()
 
-  if (!profile) return null
+  const handleUpdate = (experiences: typeof profile.experience) => {
+    updateProfile({ experience: experiences })
+  }
 
-  const handleUpdate = (experience: Experience[]) => {
-    updateProfile({ experience })
+  const updateExperienceItem = (index: number, field: keyof (typeof profile.experience)[0], value: string) => {
+    const newExperience = [...profile.experience]
+    newExperience[index] = {
+      ...newExperience[index],
+      [field]: value
+    }
+    handleUpdate(newExperience)
   }
 
   return (
     <FormSection
+      title="Experience"
       items={profile.experience}
       onAdd={() => {
         handleUpdate([...profile.experience, {
@@ -39,50 +47,30 @@ export function ExperienceSection() {
             <TextField
               label="Company"
               value={exp.company}
-              onChange={value => {
-                const newExperience = [...profile.experience]
-                newExperience[index] = { ...exp, company: value }
-                handleUpdate(newExperience)
-              }}
+              onChange={(value) => updateExperienceItem(index, 'company', value)}
             />
             <TextField
               label="Role"
               value={exp.role}
-              onChange={value => {
-                const newExperience = [...profile.experience]
-                newExperience[index] = { ...exp, role: value }
-                handleUpdate(newExperience)
-              }}
+              onChange={(value) => updateExperienceItem(index, 'role', value)}
             />
             <TextField
               label="Start Date"
               type="date"
               value={exp.startDate}
-              onChange={value => {
-                const newExperience = [...profile.experience]
-                newExperience[index] = { ...exp, startDate: value }
-                handleUpdate(newExperience)
-              }}
+              onChange={(value) => updateExperienceItem(index, 'startDate', value)}
             />
             <TextField
               label="End Date"
               type="date"
               value={exp.endDate}
-              onChange={value => {
-                const newExperience = [...profile.experience]
-                newExperience[index] = { ...exp, endDate: value }
-                handleUpdate(newExperience)
-              }}
+              onChange={(value) => updateExperienceItem(index, 'endDate', value)}
             />
           </div>
           <TextAreaField
             label="Description"
             value={exp.description}
-            onChange={value => {
-              const newExperience = [...profile.experience]
-              newExperience[index] = { ...exp, description: value }
-              handleUpdate(newExperience)
-            }}
+            onChange={(value) => updateExperienceItem(index, 'description', value)}
           />
           <TechStackField
             label="Technologies Used"

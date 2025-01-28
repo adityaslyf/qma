@@ -35,21 +35,20 @@ export default function ProfilePage() {
           throw new Error('User not authenticated')
         }
 
-        // Only fetch existing profile if we don't have parsed resume data
-        if (!parsedResume) {
+        if (parsedResume) {
+          // If we have parsed resume data, use that
+          updateProfile(parsedResume)
+        } else {
+          // Try to load existing profile
           const { data: existingProfile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('user_id', userDetails.user_id)
             .maybeSingle()
 
-          // If profile exists, load it
           if (existingProfile && !error) {
             updateProfile(existingProfile)
           }
-        } else {
-          // If we have parsed resume data, use that
-          updateProfile(parsedResume)
         }
       } catch (error) {
         console.error('Error loading profile:', error)
@@ -64,7 +63,7 @@ export default function ProfilePage() {
     }
 
     loadProfile()
-  }, [userDetails, parsedResume, updateProfile, toast])
+  }, [userDetails, parsedResume, updateProfile])
 
   const handleSave = async () => {
     try {

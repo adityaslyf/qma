@@ -7,11 +7,11 @@ export function BasicInfoSection() {
 
   if (!profile) return null
 
-  const handleUpdate = (updates: Partial<typeof profile.basic_info>) => {
+  const handleUpdate = (field: keyof typeof profile.basic_info, value: string) => {
     updateProfile({
       basic_info: {
         ...profile.basic_info,
-        ...updates
+        [field]: value
       }
     })
   }
@@ -29,43 +29,42 @@ export function BasicInfoSection() {
           <TextField
             label="Full Name"
             value={profile.basic_info.name}
-            onChange={value => handleUpdate({ name: value })}
+            onChange={(value) => handleUpdate('name', value)}
           />
           <TextField
             label="Profile Title"
             value={profile.basic_info.title}
-            onChange={value => handleUpdate({ title: value })}
+            onChange={(value) => handleUpdate('title', value)}
           />
         </div>
       </div>
 
       <TextAreaField
         label="Bio"
-        value={profile.basic_info?.bio || ''}
-        onChange={value => handleUpdate({ bio: value })}
+        value={profile.basic_info.bio || ''}
+        onChange={(value) => handleUpdate('bio', value)}
       />
 
       <div className="grid grid-cols-2 gap-4">
         <TextField
           label="Email"
-          value={profile.basic_info?.email || ''}
-          type="email"
-          onChange={value => handleUpdate({ email: value })}
+          value={profile.basic_info.email}
+          onChange={(value) => handleUpdate('email', value)}
         />
         <TextField
           label="Phone"
-          value={profile.basic_info?.phone || ''}
-          onChange={value => handleUpdate({ phone: value })}
+          value={profile.basic_info.phone}
+          onChange={(value) => handleUpdate('phone', value)}
         />
         <TextField
           label="Location"
-          value={profile.basic_info?.location || ''}
-          onChange={value => handleUpdate({ location: value })}
+          value={profile.basic_info.location}
+          onChange={(value) => handleUpdate('location', value)}
         />
         <TextField
           label="Desired Role"
-          value={profile.basic_info?.desiredRole || ''}
-          onChange={value => handleUpdate({ desiredRole: value })}
+          value={profile.basic_info.desiredRole}
+          onChange={(value) => handleUpdate('desiredRole', value)}
         />
       </div>
     </div>

@@ -26,7 +26,22 @@ export function useProfile() {
     try {
       setLoading(true)
       setError(null)
-      setProfile(prev => ({ ...prev, ...updatedProfile }))
+      
+      setProfile(prev => {
+        const newProfile = {
+          ...prev,
+          ...updatedProfile,
+          basic_info: {
+            ...prev.basic_info,
+            ...(updatedProfile.basic_info || {})
+          },
+          education: updatedProfile.education || prev.education,
+          experience: updatedProfile.experience || prev.experience,
+          projects: updatedProfile.projects || prev.projects,
+          achievements: updatedProfile.achievements || prev.achievements
+        }
+        return newProfile
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update profile')
     } finally {
