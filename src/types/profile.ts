@@ -17,16 +17,18 @@ export type Education = {
   achievements?: string[];
 };
 
+export type EmploymentType = 'full-time' | 'part-time' | 'contract' | 'internship' | 'freelance'
+
 export type Experience = {
   id: string;
   company: string;
   role: string;
   startDate: string;
   endDate: string;
-  description: string;
-  technologies: string[];
   current: boolean;
-  employmentType?: "full-time" | "part-time" | "contract" | "internship";
+  description: string;
+  employmentType: EmploymentType;
+  technologies: string[];
   highlights?: string[];
   achievements?: string[];
   responsibilities?: string[];

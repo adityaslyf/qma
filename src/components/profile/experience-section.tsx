@@ -2,16 +2,21 @@ import { useProfile } from "@/contexts/profile-context"
 import { FormSection } from "@/components/ui/form-section"
 import { TextField, TextAreaField } from "@/components/ui/form"
 import { TechStackField } from "@/components/ui/tech-stack-field"
+import { Experience } from "@/types/profile"
 
 export function ExperienceSection() {
   const { profile, updateProfile } = useProfile()
 
-  const handleUpdate = (experiences: typeof profile.experience) => {
+  const handleUpdate = (experiences: Experience[]) => {
     updateProfile({ experience: experiences })
   }
 
-  const updateExperienceItem = (index: number, field: keyof (typeof profile.experience)[0], value: string) => {
-    const newExperience = [...profile.experience]
+  const updateExperienceItem = (
+    index: number, 
+    field: keyof Experience, 
+    value: string | boolean | string[]
+  ) => {
+    const newExperience = [...(profile?.experience || [])]
     newExperience[index] = {
       ...newExperience[index],
       [field]: value
@@ -20,11 +25,11 @@ export function ExperienceSection() {
   }
 
   return (
-    <FormSection
+    <FormSection<Experience>
       title="Experience"
-      items={profile.experience}
+      items={profile?.experience || []}
       onAdd={() => {
-        handleUpdate([...profile.experience, {
+        handleUpdate([...(profile?.experience || []), {
           id: crypto.randomUUID(),
           company: '',
           role: '',
@@ -37,7 +42,7 @@ export function ExperienceSection() {
         }])
       }}
       onRemove={(index) => {
-        handleUpdate(profile.experience.filter((_, i) => i !== index))
+        handleUpdate((profile?.experience || []).filter((_, i) => i !== index))
       }}
       addButtonText="Add Experience"
       renderItem={(exp, index) => (
@@ -74,11 +79,7 @@ export function ExperienceSection() {
           <TechStackField
             label="Technologies Used"
             value={exp.technologies}
-            onChange={technologies => {
-              const newExperience = [...profile.experience]
-              newExperience[index] = { ...exp, technologies }
-              handleUpdate(newExperience)
-            }}
+            onChange={(technologies) => updateExperienceItem(index, 'technologies', technologies)}
           />
         </div>
       )}

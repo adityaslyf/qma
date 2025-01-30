@@ -1,8 +1,10 @@
 import { Card, CardContent } from "./card"
 import { Button } from "./button"
-import { Plus, Trash2 } from "lucide-react"
+import {Trash2 } from "lucide-react"
 
 interface FormSectionProps<T> {
+  title?: string
+  heading?: string
   items: T[]
   onAdd: () => void
   onRemove: (index: number) => void
@@ -12,6 +14,7 @@ interface FormSectionProps<T> {
 }
 
 export function FormSection<T>({
+  title,
   items,
   onAdd,
   onRemove,
@@ -22,6 +25,17 @@ export function FormSection<T>({
   return (
     <div className={className}>
       <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold">{title}</h2>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onAdd}
+          >
+            {addButtonText}
+          </Button>
+        </div>
         {items.map((item, index) => (
           <Card key={index}>
             <CardContent className="pt-6">
@@ -41,15 +55,6 @@ export function FormSection<T>({
           </Card>
         ))}
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        className="mt-4"
-        onClick={onAdd}
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        {addButtonText}
-      </Button>
     </div>
   )
 } 
