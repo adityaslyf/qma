@@ -9,22 +9,28 @@ interface User {
   hasProfile?: boolean;
 }
 
+interface LoadingStates {
+  authentication: boolean;
+  userDetails: boolean;
+}
+
 export function useAuth() {
-  const { getUserDetails, isLoggedIn } = useOkto()
+  const { getUserDetails, isLoggedIn, authenticate, logOut } = useOkto()
   const [userDetails, setUserDetails] = useState<User | null>(null)
-  const [isLoaded, setIsLoaded] = useState(false)
+  const [isInitializing, setIsInitializing] = useState(true)
+  const [loadingStates, setLoadingStates] = useState<LoadingStates>({
+    authentication: false,
+    userDetails: false
+  })
   const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
 
   const fetchUserDetails = useCallback(async () => {
-    if (isLoading) return
-    
+    setLoadingStates(prev => ({ ...prev, userDetails: true }))
     try {
-      setIsLoading(true)
-      
       if (!isLoggedIn) {
         setUserDetails(null)
-        setIsLoaded(true)
+        setError(null)
+        setIsInitializing(false)
         return
       }
 
@@ -42,71 +48,67 @@ export function useAuth() {
         .maybeSingle()
         .throwOnError()
 
-      // If user doesn't exist, create one
       if (!existingUser) {
-        const { data: newUser, error: createError } = await supabase
-          .from('users')
-          .insert([{
-            email: details.email,
-            user_id: details.user_id
-          }])
-          .select('id, email, user_id')
-          .single()
-          .throwOnError()
-
-        if (createError) throw createError
-        
-        // Use the newly created user
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', newUser.user_id)
-          .maybeSingle()
-          .throwOnError()
-
-        setUserDetails({
-          id: newUser.id,
-          email: newUser.email,
-          user_id: newUser.user_id,
-          hasProfile: !!profile
-        })
-      } else {
-        // User exists, check for profile
-        const { data: profile} = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', existingUser.user_id)
-          .maybeSingle()
-          .throwOnError()
-
-        setUserDetails({
-          id: existingUser.id,
-          email: existingUser.email,
-          user_id: existingUser.user_id,
-          hasProfile: !!profile
-        })
+        // First time user - don't show loader
+        setIsInitializing(false)
+        setUserDetails(null)
+        return
       }
 
-      setError(null)
+      // Existing user - check for profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', existingUser.user_id)
+        .maybeSingle()
+        .throwOnError()
+
+      setUserDetails({
+        id: existingUser.id,
+        email: existingUser.email,
+        user_id: existingUser.user_id,
+        hasProfile: !!profile
+      })
+
     } catch (error) {
       console.error('Error fetching user details:', error)
       setError(error instanceof Error ? error.message : 'Failed to fetch user details')
       setUserDetails(null)
     } finally {
-      setIsLoaded(true)
-      setIsLoading(false)
+      setLoadingStates(prev => ({ ...prev, userDetails: false }))
+      setIsInitializing(false)
     }
-  }, [getUserDetails, isLoggedIn, isLoading])
+  }, [getUserDetails, isLoggedIn])
 
-  useEffect(() => {
-    if (isLoggedIn && !userDetails && !isLoading) {
-      fetchUserDetails()
+  // Modified authenticate wrapper
+  const handleAuthenticate = useCallback(async () => {
+    setLoadingStates(prev => ({ ...prev, authentication: true }))
+    try {
+      await authenticate()
+      await fetchUserDetails()
+    } finally {
+      setLoadingStates(prev => ({ ...prev, authentication: false }))
     }
-  }, [isLoggedIn, userDetails, fetchUserDetails, isLoading])
+  }, [authenticate, fetchUserDetails])
+
+  // Separate initial load from authentication
+  useEffect(() => {
+    const init = async () => {
+      if (isLoggedIn) {
+        await fetchUserDetails()
+      } else {
+        setIsInitializing(false)
+      }
+    }
+    init()
+  }, [isLoggedIn, fetchUserDetails])
 
   return {
     userDetails,
-    isLoaded,
+    signIn: handleAuthenticate,
+    signOut: logOut,
+    isInitializing,
+    loadingStates,
     error,
     fetchUserDetails,
     isSignedIn: !!userDetails

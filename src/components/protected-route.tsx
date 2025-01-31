@@ -8,13 +8,15 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isSignedIn, isLoaded, userDetails } = useAuth()
+  const { isSignedIn, isInitializing, userDetails } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
-    if (!isLoaded) return
+    // Don't do anything while initializing
+    if (isInitializing) return
 
+    // If not signed in, redirect to login
     if (!isSignedIn) {
       navigate('/login', { replace: true })
       return
@@ -25,10 +27,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     if (userDetails?.hasProfile && location.pathname === '/') {
       navigate('/profile', { replace: true })
     }
-  }, [isLoaded, isSignedIn, userDetails, navigate, location.pathname])
+  }, [isInitializing, isSignedIn, userDetails, navigate, location.pathname])
 
-  if (!isLoaded) {
+  // Show loader only during initialization
+  if (isInitializing) {
     return <LoadingSpinner />
+  }
+
+  // If not signed in, don't render anything (will be redirected)
+  if (!isSignedIn) {
+    return null
   }
 
   return <>{children}</>
