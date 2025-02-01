@@ -13,31 +13,43 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation()
 
   useEffect(() => {
-    // Don't do anything while initializing
-    if (isInitializing) return
+    console.log('[ProtectedRoute] State:', {
+      isInitializing,
+      isSignedIn,
+      hasProfile: userDetails?.hasProfile,
+      pathname: location.pathname
+    })
 
-    // If not signed in, redirect to login
-    if (!isSignedIn) {
-      navigate('/login', { replace: true })
+    if (isInitializing) {
+      console.log('[ProtectedRoute] Still initializing, waiting...')
       return
     }
 
-    // Only redirect to profile if user has a saved profile
-    // and they're trying to access the home page
-    if (userDetails?.hasProfile && location.pathname === '/') {
+    if (!isSignedIn) {
+      console.log('[ProtectedRoute] Not signed in, redirecting to login')
+      navigate('/login', { 
+        replace: true,
+        state: { from: location.pathname }
+      })
+      return
+    }
+
+    if (location.pathname === '/' && userDetails?.hasProfile) {
+      console.log('[ProtectedRoute] User has profile, redirecting to profile page')
       navigate('/profile', { replace: true })
     }
   }, [isInitializing, isSignedIn, userDetails, navigate, location.pathname])
 
-  // Show loader only during initialization
   if (isInitializing) {
+    console.log('[ProtectedRoute] Rendering loading spinner')
     return <LoadingSpinner />
   }
 
-  // If not signed in, don't render anything (will be redirected)
   if (!isSignedIn) {
+    console.log('[ProtectedRoute] Not signed in, rendering null')
     return null
   }
 
+  console.log('[ProtectedRoute] Rendering protected content')
   return <>{children}</>
 }

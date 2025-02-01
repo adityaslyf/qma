@@ -83,8 +83,8 @@ export interface BasicInfo {
 
 export interface Profile {
   id?: string;
-  name?: string;
-  title?: string;
+  user_id: string;
+  full_name?: string;
   bio?: string;
   email?: string;
   phone?: string;
@@ -102,10 +102,9 @@ export interface Profile {
   certifications?: Certificate[];
   languages?: string[];
   socialLinks?: SocialLink[];
-  // publications?: Publication[];
-  // volunteering?: Volunteering[];
+  created_at?: string;
+  updated_at?: string;
   interests?: string[];
-  // references?: Reference[];
 }
 
 export interface Skill {

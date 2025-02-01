@@ -12,9 +12,11 @@ import { supabase } from '@/lib/supabase'
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useAuth } from "@/hooks/user-auth"
 
+
+
 export default function ProfilePage() {
   const { parsedResume } = useResume()
-  const { userDetails } = useAuth()
+  const { userDetails, fetchUserDetails } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
   const { profile, updateProfile } = useProfile()
   const { toast } = useToast()
@@ -59,43 +61,143 @@ export default function ProfilePage() {
     loadProfile()
   }, [userDetails, parsedResume, updateProfile])
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('[Profile] Current auth session:', {
+        userId: session?.user?.id,
+        matchesUserDetails: session?.user?.id === userDetails?.user_id
+      })
+    }
+    checkAuth()
+  }, [userDetails?.user_id])
+
+  useEffect(() => {
+    const refreshSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession()
+      if (error || !session) {
+        console.error('[Profile] Session refresh error:', error)
+        // Redirect to login or show error
+        return
+      }
+      console.log('[Profile] Session refreshed:', {
+        userId: session.user.id,
+        email: session.user.email
+      })
+    }
+    refreshSession()
+  }, [])
+
   const handleSave = async () => {
     try {
       if (!userDetails?.user_id) {
         throw new Error('User not authenticated')
       }
 
-      const profileData = {
-        user_id: userDetails.user_id,
-        ...profile
-      }
-
-      const { error: supabaseError } = await supabase
+      // Step 1: Save profile data
+      const { error: profileError } = await supabase
         .from('profiles')
-        .upsert(profileData, {
+        .upsert({
+          user_id: userDetails.user_id,
+          basic_info: profile.basic_info,
+          experience: profile.experience,
+          education: profile.education,
+          projects: profile.projects,
+          achievements: profile.achievements
+        }, {
           onConflict: 'user_id'
         })
 
-      if (supabaseError) {
-        console.error('Supabase error:', supabaseError)
-        throw supabaseError
+      if (profileError) {
+        console.error('[Profile] Profile save error:', profileError)
+        throw profileError
       }
 
-      // Update user details to indicate they now have a profile
-      await supabase
+      console.log('[Profile] Profile saved successfully')
+
+      // Step 2: Get current session
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('[Profile] Current session:', {
+        sessionUserId: session?.user?.id,
+        userDetailsId: userDetails.user_id
+      })
+
+      // Step 3: First verify the user exists
+      const { data: existingUser, error: findError } = await supabase
         .from('users')
-        .update({ hasProfile: true })
+        .select('*')
         .eq('user_id', userDetails.user_id)
+        .single()
+
+      console.log('[Profile] Found user:', { 
+        existingUser,
+        findError,
+        userMatch: session?.user?.id === existingUser?.user_id
+      })
+
+      if (findError) {
+        console.error('[Profile] Error finding user:', findError)
+        throw findError
+      }
+
+      if (!existingUser) {
+        throw new Error('User not found')
+      }
+
+      // Step 4: Update has_profile flag using a simpler update
+      const { data: updatedUser, error: userError } = await supabase
+        .from('users')
+        .update({ has_profile: true })
+        .eq('id', existingUser.id)
+        .select()
+
+      console.log('[Profile] User update attempt:', {
+        updateQuery: {
+          table: 'users',
+          id: existingUser.id,
+          user_id: existingUser.user_id,
+          update: { has_profile: true }
+        },
+        result: {
+          data: updatedUser,
+          error: userError ? {
+            code: userError.code,
+            message: userError.message,
+            details: userError.details,
+            hint: userError.hint
+          } : null
+        }
+      })
+
+      if (userError) {
+        console.error('[Profile] User update error:', userError)
+        throw userError
+      }
+
+      // Step 5: Verify the update
+      const { data: verifyUser } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', existingUser.id)
+        .single()
+
+      console.log('[Profile] Verification:', {
+        before: existingUser.has_profile,
+        after: verifyUser?.has_profile
+      })
+
+      // Step 6: Refresh user details
+      await fetchUserDetails()
 
       toast({
         title: "Success",
         description: "Profile saved successfully",
       })
     } catch (error) {
-      console.error('Error saving profile:', error)
+      console.error('[Profile] Save error:', error)
       toast({
         title: "Error",
-        description: typeof error === 'object' && error !== null ? (error as any).message : "Failed to save profile",
+        description: error instanceof Error ? error.message : "Failed to save profile",
         variant: "destructive",
       })
     }

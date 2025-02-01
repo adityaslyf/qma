@@ -25,9 +25,12 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null)
 
   const fetchUserDetails = useCallback(async () => {
+    console.log('[useAuth] Fetching user details, isLoggedIn:', isLoggedIn)
     setLoadingStates(prev => ({ ...prev, userDetails: true }))
+    
     try {
       if (!isLoggedIn) {
+        console.log('[useAuth] Not logged in, clearing user details')
         setUserDetails(null)
         setError(null)
         setIsInitializing(false)
@@ -35,43 +38,51 @@ export function useAuth() {
       }
 
       const details = await getUserDetails()
+      console.log('[useAuth] Got user details:', details)
       
       if (!details?.email || !details?.user_id) {
         throw new Error('Invalid user details from Okto')
       }
 
-      // Get user data with proper headers
-      const { data: existingUser} = await supabase
+      // First, try to get existing user
+      let { data: existingUser, error: selectError } = await supabase
         .from('users')
-        .select('id, email, user_id')
+        .select('id, email, user_id, has_profile')
         .eq('user_id', details.user_id)
         .maybeSingle()
-        .throwOnError()
+
+      console.log('[useAuth] Existing user query result:', { existingUser, selectError })
 
       if (!existingUser) {
-        // First time user - don't show loader
-        setIsInitializing(false)
-        setUserDetails(null)
-        return
-      }
+        // Create new user if doesn't exist
+        const { data: newUser, error: insertError } = await supabase
+          .from('users')
+          .insert([{
+            email: details.email,
+            user_id: details.user_id,
+            has_profile: false
+          }])
+          .select('id, email, user_id, has_profile')
+          .single()
 
-      // Existing user - check for profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', existingUser.user_id)
-        .maybeSingle()
-        .throwOnError()
+        console.log('[useAuth] Insert new user result:', { newUser, insertError })
+
+        if (insertError) {
+          console.error('[useAuth] Failed to insert new user:', insertError)
+          throw insertError
+        }
+        existingUser = newUser
+      }
 
       setUserDetails({
         id: existingUser.id,
         email: existingUser.email,
         user_id: existingUser.user_id,
-        hasProfile: !!profile
+        hasProfile: existingUser.has_profile
       })
 
     } catch (error) {
-      console.error('Error fetching user details:', error)
+      console.error('[useAuth] Error in fetchUserDetails:', error)
       setError(error instanceof Error ? error.message : 'Failed to fetch user details')
       setUserDetails(null)
     } finally {
@@ -80,37 +91,28 @@ export function useAuth() {
     }
   }, [getUserDetails, isLoggedIn])
 
-  // Modified authenticate wrapper
-  const handleAuthenticate = useCallback(async () => {
-    setLoadingStates(prev => ({ ...prev, authentication: true }))
-    try {
-      await authenticate()
-      await fetchUserDetails()
-    } finally {
-      setLoadingStates(prev => ({ ...prev, authentication: false }))
-    }
-  }, [authenticate, fetchUserDetails])
-
-  // Separate initial load from authentication
+  // Add initialization effect
   useEffect(() => {
-    const init = async () => {
-      if (isLoggedIn) {
-        await fetchUserDetails()
-      } else {
-        setIsInitializing(false)
-      }
-    }
-    init()
-  }, [isLoggedIn, fetchUserDetails])
+    console.log('[useAuth] Initial mount, isLoggedIn:', isLoggedIn)
+    fetchUserDetails()
+  }, [fetchUserDetails])
+
+  const isSignedIn = isLoggedIn && !!userDetails
+  console.log('[useAuth] Current state:', {
+    isInitializing,
+    isLoggedIn,
+    hasUserDetails: !!userDetails,
+    isSignedIn
+  })
 
   return {
     userDetails,
-    signIn: handleAuthenticate,
+    signIn: authenticate,
     signOut: logOut,
     isInitializing,
     loadingStates,
     error,
     fetchUserDetails,
-    isSignedIn: !!userDetails
+    isSignedIn
   }
 }
