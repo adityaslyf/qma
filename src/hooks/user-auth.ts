@@ -14,7 +14,20 @@ interface LoadingStates {
   userDetails: boolean;
 }
 
-export function useAuth() {
+interface AuthHookReturn {
+  userDetails: User | null;
+  signIn: (idToken: string, callback: (result: any, error: any) => void) => void;
+  signOut: () => void;
+  isInitializing: boolean;
+  isLoaded: boolean;
+  loadingStates: LoadingStates;
+  error: string | null;
+  fetchUserDetails: () => Promise<void>;
+  isSignedIn: boolean;
+  user: User | null;
+}
+
+export function useAuth(): AuthHookReturn {
   const { getUserDetails, isLoggedIn, authenticate, logOut } = useOkto()
   const [userDetails, setUserDetails] = useState<User | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
@@ -110,9 +123,11 @@ export function useAuth() {
     signIn: authenticate,
     signOut: logOut,
     isInitializing,
+    isLoaded: !isInitializing,
     loadingStates,
     error,
     fetchUserDetails,
-    isSignedIn
+    isSignedIn,
+    user: userDetails
   }
 }

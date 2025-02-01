@@ -12,7 +12,14 @@ import {
 } from "./ui/dropdown-menu"
 
 export function AuthButtons() {
-  const { isSignedIn, isLoaded, signOut, signIn, fetchUserDetails, user } = useAuth()
+  const { 
+    isSignedIn, 
+    isLoaded,
+    signOut, 
+    signIn, 
+    fetchUserDetails, 
+    userDetails 
+  } = useAuth()
 
   useEffect(() => {
     fetchUserDetails()
@@ -57,11 +64,11 @@ export function AuthButtons() {
               <DropdownMenuSeparator />
               <DropdownMenuItem className="flex flex-col items-start gap-1">
                 <span className="text-sm font-medium">Email</span>
-                <span className="text-xs text-muted-foreground">{user?.email}</span>
+                <span className="text-xs text-muted-foreground">{userDetails?.email}</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="flex flex-col items-start gap-1">
                 <span className="text-sm font-medium">User ID</span>
-                <span className="text-xs text-muted-foreground">{user?.user_id}</span>
+                <span className="text-xs text-muted-foreground">{userDetails?.user_id}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut} className="text-red-600">
