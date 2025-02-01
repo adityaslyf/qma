@@ -99,11 +99,11 @@ export default function ProfilePage() {
         .from('profiles')
         .upsert({
           user_id: userDetails.user_id,
-          basic_info: profile.basic_info,
-          experience: profile.experience,
-          education: profile.education,
-          projects: profile.projects,
-          achievements: profile.achievements
+          basic_info: profile?.basic_info,
+          experience: profile?.experience,
+          education: profile?.education,
+          projects: profile?.projects,
+          achievements: profile?.achievements
         }, {
           onConflict: 'user_id'
         })

@@ -10,6 +10,7 @@ interface ProfileContextType {
 }
 
 const initialProfile: Profile = {
+  user_id: '',
   basic_info: {
     name: '',
     title: '',

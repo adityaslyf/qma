@@ -114,6 +114,7 @@ export interface Skill {
 }
 
 export const initialProfile: Profile = {
+  user_id: "",
   basic_info: {
     name: "",
     title: "",

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Profile } from '@/types/profile'
 
 const initialProfile: Profile = {
+  user_id: '',
   basic_info: {
     name: '',
     title: '',
