@@ -11,9 +11,10 @@ import { useToast } from "@/components/ui/custom-toaster"
 import { supabase } from '@/lib/supabase'
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useAuth } from "@/hooks/user-auth"
-import { Save, Briefcase, GraduationCap, Trophy, FolderGit2, User, ChevronLeft, Settings, Bell, Search } from 'lucide-react'
+import { Save, Briefcase, GraduationCap, Trophy, FolderGit2, User, ChevronLeft, Settings, Bell, Search, Mail } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
+import { TemplateGenerator } from '@/components/template-generator'
 
 export default function ProfilePage() {
   const { parsedResume } = useResume()
@@ -416,6 +417,9 @@ export default function ProfilePage() {
                 <AchievementsSection />
               </ContentCard>
             )}
+            <ContentCard title="Email Templates" icon={<Mail />}>
+              <TemplateGenerator />
+            </ContentCard>
           </div>
         </div>
       </div>

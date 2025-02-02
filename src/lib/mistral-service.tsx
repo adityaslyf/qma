@@ -184,4 +184,14 @@ export class MistralService {
 
     return formattedData;
   }
+
+  static async generateEmailTemplate(prompt: string): Promise<string> {
+    try {
+      const response = await this.callMistralAPI(prompt)
+      return response
+    } catch (error) {
+      console.error('Template generation error:', error)
+      throw error
+    }
+  }
 }
