@@ -6,6 +6,7 @@ import { ExperienceSection } from "@/components/profile/experience-section"
 import { EducationSection } from "@/components/profile/education-section"
 import { ProjectsSection } from "@/components/profile/projects-section"
 import { AchievementsSection } from "@/components/profile/achievements-section"
+import { TemplatesSection } from '@/components/profile/template-section'
 import { useResume } from '@/contexts/resume-context'
 import { useToast } from "@/components/ui/custom-toaster"
 import { supabase } from '@/lib/supabase'
@@ -14,7 +15,7 @@ import { useAuth } from "@/hooks/user-auth"
 import { Save, Briefcase, GraduationCap, Trophy, FolderGit2, User, ChevronLeft, Settings, Bell, Search, Mail } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
-import { TemplateGenerator } from '@/components/template-generator'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 
 export default function ProfilePage() {
   const { parsedResume } = useResume()
@@ -22,7 +23,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true)
   const { profile, updateProfile } = useProfile()
   const { toast } = useToast()
-  const [activeSection, setActiveSection] = useState('basic-info')
+  const [activeTab, setActiveTab] = useState('basic-info')
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [alertInfo, setAlertInfo] = useState<{
     show: boolean;
@@ -282,37 +283,44 @@ export default function ProfilePage() {
           <NavButton
             icon={<User />}
             label="Basic Info"
-            isActive={activeSection === 'basic-info'}
+            isActive={activeTab === 'basic-info'}
             isCollapsed={isSidebarCollapsed}
-            onClick={() => setActiveSection('basic-info')}
+            onClick={() => setActiveTab('basic-info')}
           />
           <NavButton
             icon={<Briefcase />}
             label="Experience"
-            isActive={activeSection === 'experience'}
+            isActive={activeTab === 'experience'}
             isCollapsed={isSidebarCollapsed}
-            onClick={() => setActiveSection('experience')}
+            onClick={() => setActiveTab('experience')}
           />
           <NavButton
             icon={<GraduationCap />}
             label="Education"
-            isActive={activeSection === 'education'}
+            isActive={activeTab === 'education'}
             isCollapsed={isSidebarCollapsed}
-            onClick={() => setActiveSection('education')}
+            onClick={() => setActiveTab('education')}
           />
           <NavButton
             icon={<FolderGit2 />}
             label="Projects"
-            isActive={activeSection === 'projects'}
+            isActive={activeTab === 'projects'}
             isCollapsed={isSidebarCollapsed}
-            onClick={() => setActiveSection('projects')}
+            onClick={() => setActiveTab('projects')}
           />
           <NavButton
             icon={<Trophy />}
             label="Achievements"
-            isActive={activeSection === 'achievements'}
+            isActive={activeTab === 'achievements'}
             isCollapsed={isSidebarCollapsed}
-            onClick={() => setActiveSection('achievements')}
+            onClick={() => setActiveTab('achievements')}
+          />
+          <NavButton
+            icon={<Mail />}
+            label="Templates"
+            isActive={activeTab === 'templates'}
+            isCollapsed={isSidebarCollapsed}
+            onClick={() => setActiveTab('templates')}
           />
         </div>
 
@@ -391,36 +399,26 @@ export default function ProfilePage() {
 
         {/* Content Area */}
         <div className="p-6 pt-24 max-w-5xl mx-auto">
-          <div className="grid gap-6">
-            {activeSection === 'basic-info' && (
-              <ContentCard title="Basic Information" icon={<User />}>
-                <BasicInfoSection />
-              </ContentCard>
-            )}
-            {activeSection === 'experience' && (
-              <ContentCard title="Professional Experience" icon={<Briefcase />}>
-                <ExperienceSection />
-              </ContentCard>
-            )}
-            {activeSection === 'education' && (
-              <ContentCard title="Education" icon={<GraduationCap />}>
-                <EducationSection />
-              </ContentCard>
-            )}
-            {activeSection === 'projects' && (
-              <ContentCard title="Projects" icon={<FolderGit2 />}>
-                <ProjectsSection />
-              </ContentCard>
-            )}
-            {activeSection === 'achievements' && (
-              <ContentCard title="Achievements" icon={<Trophy />}>
-                <AchievementsSection />
-              </ContentCard>
-            )}
-            <ContentCard title="Email Templates" icon={<Mail />}>
-              <TemplateGenerator />
-            </ContentCard>
-          </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsContent value="basic-info">
+              <BasicInfoSection />
+            </TabsContent>
+            <TabsContent value="experience">
+              <ExperienceSection />
+            </TabsContent>
+            <TabsContent value="education">
+              <EducationSection />
+            </TabsContent>
+            <TabsContent value="projects">
+              <ProjectsSection />
+            </TabsContent>
+            <TabsContent value="achievements">
+              <AchievementsSection />
+            </TabsContent>
+            <TabsContent value="templates">
+              <TemplatesSection />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
@@ -449,20 +447,3 @@ function NavButton({ icon, label, isActive, isCollapsed, onClick }: NavButtonPro
   )
 }
 
-interface ContentCardProps {
-  title: string
-  icon: React.ReactNode
-  children: React.ReactNode
-}
-
-function ContentCard({ title, icon, children }: ContentCardProps) {
-  return (
-    <div className="bg-card rounded-xl shadow-lg overflow-hidden">
-      <div className="p-6 border-b border-border/50 flex items-center">
-        <span className="h-5 w-5 text-primary mr-2">{icon}</span>
-        <h2 className="text-xl font-semibold">{title}</h2>
-      </div>
-      <div className="p-6">{children}</div>
-    </div>
-  )
-}

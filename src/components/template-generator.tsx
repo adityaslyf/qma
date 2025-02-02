@@ -27,7 +27,12 @@ const TEMPLATE_TYPES: { label: string; value: TemplateType }[] = [
 
 export function TemplateGenerator() {
   const { profile } = useProfile()
-  const { generateTemplate, templates, isGenerating, updateTemplate } = useTemplates()
+  const { 
+    generateTemplate, 
+    templates, 
+    isGenerating, 
+    updateTemplate,
+  } = useTemplates()
   const [targetRole, setTargetRole] = useState(profile?.basic_info.desiredRole || '')
   const [company, setCompany] = useState('')
   const [type, setType] = useState<TemplateType>('cold-email')
