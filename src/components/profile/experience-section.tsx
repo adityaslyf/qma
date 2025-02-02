@@ -7,6 +7,8 @@ import { Experience } from "@/types/profile"
 export function ExperienceSection() {
   const { profile, updateProfile } = useProfile()
 
+  if (!profile) return null
+
   const handleUpdate = (experiences: Experience[]) => {
     updateProfile({ experience: experiences })
   }
@@ -26,7 +28,7 @@ export function ExperienceSection() {
 
   return (
     <FormSection<Experience>
-      title="Experience"
+      title="Professional Experience"
       items={profile?.experience || []}
       onAdd={() => {
         handleUpdate([...(profile?.experience || []), {
