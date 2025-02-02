@@ -23,6 +23,11 @@ export default function ProfilePage() {
   const { toast } = useToast()
   const [activeSection, setActiveSection] = useState('basic-info')
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [alertInfo, setAlertInfo] = useState<{
+    show: boolean;
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null)
 
   // Load existing profile or parsed resume data
   useEffect(() => {
@@ -97,6 +102,13 @@ export default function ProfilePage() {
         throw new Error('User not authenticated')
       }
 
+      // Show saving alert
+      setAlertInfo({
+        show: true,
+        type: 'success',
+        message: 'Saving changes...'
+      });
+
       // Step 1: Save profile data
       const { error: profileError } = await supabase
         .from('profiles')
@@ -112,7 +124,6 @@ export default function ProfilePage() {
         })
 
       if (profileError) {
-        console.error('[Profile] Profile save error:', profileError)
         throw profileError
       }
 
@@ -192,17 +203,33 @@ export default function ProfilePage() {
       // Step 6: Refresh user details
       await fetchUserDetails()
 
-      toast({
-        title: "Success",
-        description: "Profile saved successfully",
-      })
+      // Show success alert
+      setAlertInfo({
+        show: true,
+        type: 'success',
+        message: 'Changes saved successfully!'
+      });
+
+      // Hide alert after 3 seconds
+      setTimeout(() => {
+        setAlertInfo(null);
+      }, 3000);
+
     } catch (error) {
       console.error('[Profile] Save error:', error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save profile",
-        variant: "destructive",
-      })
+      // Show error alert
+      setAlertInfo({
+        show: true,
+        type: 'error',
+        message: error instanceof Error 
+          ? `Failed to save: ${error.message}`
+          : 'Failed to save profile. Please try again.'
+      });
+
+      // Hide error alert after 5 seconds
+      setTimeout(() => {
+        setAlertInfo(null);
+      }, 5000);
     }
   }
 
@@ -222,12 +249,20 @@ export default function ProfilePage() {
             {!isSidebarCollapsed && (
               <div className="flex items-center space-x-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src="/path-to-avatar.jpg" />
-                  <AvatarFallback>JP</AvatarFallback>
+                  <AvatarImage src={profile?.basic_info?.avatar} />
+                  <AvatarFallback>
+                    {profile?.basic_info?.name 
+                      ? profile.basic_info.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                      : userDetails?.email?.slice(0, 2).toUpperCase() || 'U'}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-medium">John Doe</h3>
-                  <p className="text-xs text-muted-foreground">Premium Profile</p>
+                  <h3 className="font-medium">
+                    {profile?.basic_info?.name || userDetails?.email?.split('@')[0] || 'User'}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {profile?.basic_info?.title || 'Profile'}
+                  </p>
                 </div>
               </div>
             )}
@@ -282,12 +317,52 @@ export default function ProfilePage() {
 
         {/* Bottom Actions */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/50">
+          {alertInfo && alertInfo.show && (
+            <div 
+              className={`absolute bottom-full left-4 right-4 mb-2 p-3 rounded-lg shadow-lg transition-all duration-300 ${
+                alertInfo.type === 'success' 
+                  ? 'bg-green-100 border border-green-400 text-green-800'
+                  : 'bg-red-100 border border-red-400 text-red-800'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  {alertInfo.type === 'success' ? (
+                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <span className="font-medium">{alertInfo.message}</span>
+                </div>
+                <button 
+                  onClick={() => setAlertInfo(null)}
+                  className="text-sm hover:text-gray-600"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
           <Button 
-            className="w-full"
+            className="w-full relative group"
             onClick={handleSave}
+            variant="default"
           >
             <Save className="h-4 w-4 mr-2" />
-            {!isSidebarCollapsed && 'Save Changes'}
+            {!isSidebarCollapsed && (
+              <>
+                Save Changes
+                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  Click to save your changes
+                </div>
+              </>
+            )}
           </Button>
         </div>
       </div>
