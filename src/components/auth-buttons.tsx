@@ -1,10 +1,37 @@
-import { SignInButton, UserButton } from "@clerk/clerk-react"
 import { Button } from "./ui/button"
-import { useAuth } from "../hooks/user-auth"
-import { Loader2 } from "lucide-react"
+import { useAuth } from "@/hooks/user-auth"
+import { Loader2, User } from "lucide-react"
+import { useEffect } from "react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
 
 export function AuthButtons() {
-  const { isSignedIn, isLoaded } = useAuth()
+  const { 
+    isSignedIn, 
+    isLoaded,
+    signOut, 
+    signIn, 
+    fetchUserDetails, 
+    userDetails 
+  } = useAuth()
+
+  useEffect(() => {
+    fetchUserDetails()
+  }, [fetchUserDetails])
+
+  const handleSignIn = () => {
+    signIn("", (_, error) => {
+      if (error) {
+        console.error('Authentication failed:', error)
+      }
+    })
+  }
 
   if (!isLoaded) {
     return (
@@ -17,20 +44,39 @@ export function AuthButtons() {
   return (
     <div className="flex items-center gap-4">
       {!isSignedIn ? (
-        <SignInButton mode="modal">
-          <Button variant="default">
-            Sign In
-          </Button>
-        </SignInButton>
+        <Button variant="default" onClick={handleSignIn}>
+          Sign In
+        </Button>
       ) : (
-        <UserButton 
-          afterSignOutUrl="/"
-          appearance={{
-            elements: {
-              avatarBox: "h-10 w-10"
-            }
-          }}
-        />
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="rounded-full"
+              >
+                <User className="h-6 w-6" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="flex flex-col items-start gap-1">
+                <span className="text-sm font-medium">Email</span>
+                <span className="text-xs text-muted-foreground">{userDetails?.email}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex flex-col items-start gap-1">
+                <span className="text-sm font-medium">User ID</span>
+                <span className="text-xs text-muted-foreground">{userDetails?.user_id}</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut} className="text-red-600">
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       )}
     </div>
   )

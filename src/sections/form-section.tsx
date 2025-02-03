@@ -15,7 +15,7 @@ export function FormSection<T>({
   onAdd, 
   onRemove, 
   renderItem,
-  addButtonText 
+  addButtonText,
 }: FormSectionProps<T>) {
   return (
     <div className="space-y-6">

@@ -10,19 +10,25 @@ interface ExperienceSectionProps {
 export function ExperienceSection({ experience, onUpdate }: ExperienceSectionProps) {
   return (
     <FormSection
-      items={experience}
+      items={experience || []}
       onAdd={() => {
-        onUpdate([...experience, {
+        onUpdate([...(experience || []), {
+          id: crypto.randomUUID(),
           company: '',
           role: '',
           startDate: '',
           endDate: '',
+          current: false,
           description: '',
-          technologies: []
+          employmentType: 'full-time' as const,
+          technologies: [],
+          highlights: [],
+          achievements: [],
+          responsibilities: []
         }])
       }}
       onRemove={(index) => {
-        onUpdate(experience.filter((_, i) => i !== index))
+        onUpdate((experience || []).filter((_, i) => i !== index))
       }}
       addButtonText="Add Experience"
       renderItem={(exp, index) => (
@@ -30,63 +36,84 @@ export function ExperienceSection({ experience, onUpdate }: ExperienceSectionPro
           <div className="grid grid-cols-2 gap-4">
             <TextField
               label="Company"
-              value={exp.company}
+              value={exp.company || ''}
               onChange={value => {
-                const newExperience = [...experience]
-                newExperience[index].company = value
+                const newExperience = [...(experience || [])]
+                newExperience[index] = {
+                  ...newExperience[index],
+                  company: value
+                }
                 onUpdate(newExperience)
               }}
             />
             <TextField
               label="Role"
-              value={exp.role}
+              value={exp.role || ''}
               onChange={value => {
-                const newExperience = [...experience]
-                newExperience[index].role = value
+                const newExperience = [...(experience || [])]
+                newExperience[index] = {
+                  ...newExperience[index],
+                  role: value
+                }
                 onUpdate(newExperience)
               }}
             />
             <TextField
               label="Start Date"
               type="date"
-              value={exp.startDate}
+              value={exp.startDate || ''}
               onChange={value => {
-                const newExperience = [...experience]
-                newExperience[index].startDate = value
+                const newExperience = [...(experience || [])]
+                newExperience[index] = {
+                  ...newExperience[index],
+                  startDate: value
+                }
                 onUpdate(newExperience)
               }}
             />
             <TextField
               label="End Date"
               type="date"
-              value={exp.endDate}
+              value={exp.endDate || ''}
               onChange={value => {
-                const newExperience = [...experience]
-                newExperience[index].endDate = value
+                const newExperience = [...(experience || [])]
+                newExperience[index] = {
+                  ...newExperience[index],
+                  endDate: value
+                }
                 onUpdate(newExperience)
               }}
             />
           </div>
           <TextAreaField
             label="Description"
-            value={exp.description}
+            value={exp.description || ''}
             onChange={value => {
-              const newExperience = [...experience]
-              newExperience[index].description = value
+              const newExperience = [...(experience || [])]
+              newExperience[index] = {
+                ...newExperience[index],
+                description: value
+              }
               onUpdate(newExperience)
             }}
           />
           <TechStackField
             label="Technologies Used"
-            technologies={exp.technologies}
+            technologies={exp.technologies || []}
             onAdd={tech => {
-              const newExperience = [...experience]
-              newExperience[index].technologies = [...exp.technologies, tech]
+              const newExperience = [...(experience || [])]
+              newExperience[index] = {
+                ...newExperience[index],
+                technologies: [...(exp.technologies || []), tech]
+              }
               onUpdate(newExperience)
             }}
             onRemove={techIndex => {
-              const newExperience = [...experience]
-              newExperience[index].technologies = exp.technologies.filter((_, i) => i !== techIndex)
+              const newExperience = [...(experience || [])]
+              newExperience[index] = {
+                ...newExperience[index],
+                technologies: (exp.technologies || []).filter((_, i) => i !== techIndex)
+              }
               onUpdate(newExperience)
             }}
           />
